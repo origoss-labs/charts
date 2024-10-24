@@ -37,4 +37,4 @@
 
 - [ ] Chart version bumped in `Chart.yaml` according to [semver](http://semver.org/). This is *not necessary* when the changes only affect README.md files.
 - [ ] Title of the pull request follows this pattern [origoss-labs/<name_of_the_chart>] Descriptive title
-- [ ] All commits signed off and in agreement of [Developer Certificate of Origin (DCO)](#TODO)
+- [ ] All commits signed off and in agreement of [Developer Certificate of Origin (DCO)](../../CONTRIBUTING.md#sign-your-work)
