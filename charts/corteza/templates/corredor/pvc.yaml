@@ -1,0 +1,19 @@
+{{- if and .Values.corredor.enabled .Values.corredor.persistence.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "corteza.corredor.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.corredor.name "name" .Values.corredor.name) | nindent 4 }}
+spec:
+  {{- include "corteza.corredor.storageClass" . | nindent 2 }}
+  {{- if not (empty .Values.corredor.persistence.accessModes) }}
+  accessModes:
+  {{- range .Values.corredor.persistence.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.corredor.persistence.size | quote }}
+{{- end }}

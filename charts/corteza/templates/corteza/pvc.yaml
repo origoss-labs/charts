@@ -1,0 +1,19 @@
+{{- if .Values.server.persistence.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "corteza.server.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}
+spec:
+  {{- include "corteza.server.storageClass" . | nindent 2 }}
+  {{- if not (empty .Values.server.persistence.accessModes) }}
+  accessModes:
+  {{- range .Values.server.persistence.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.server.persistence.size | quote }}
+{{- end }}

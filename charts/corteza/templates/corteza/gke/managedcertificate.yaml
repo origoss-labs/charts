@@ -1,0 +1,14 @@
+{{- if and .Values.server.ingress.enabled (and (eq .Values.server.ingress.controller "gcp") .Values.server.ingress.gcp.managedCertificate.create) }}
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: {{ include "corteza.server.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}
+spec:
+  domains:
+    - {{ .Values.server.ingress.hostname | default .Values.global.domain }}
+    {{- with .Values.server.ingress.gcp.managedCertificate.extraDomains }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

@@ -1,0 +1,98 @@
+{{- if .Values.corredor.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "corteza.corredor.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.corredor.name "name" .Values.corredor.name) | nindent 4 }}
+spec:
+  {{- if not .Values.server.autoscaling.enabled }}
+  replicas: {{ .Values.server.replicaCount }}
+  {{- end }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "corteza.selectorLabels" (dict "context" . "component" .Values.corredor.name "name" .Values.corredor.name) | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.corredor.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "corteza.labels" (dict "context" . "component" .Values.corredor.name "name" .Values.corredor.name) | nindent 8 }}
+    spec:
+      {{- with .Values.corredor.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "corteza.corredor.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.corredor.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- tpl (toYaml .Values.corredor.initContainers) $ | nindent 8 }}
+      containers:
+        - name: "corredor"
+          securityContext:
+            {{- toYaml .Values.corredor.securityContext | nindent 12 }}
+          image: "{{ .Values.corredor.image.repository }}:{{ .Values.corredor.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.corredor.image.imagePullPolicy }}
+          env:
+          - name: CORREDOR_EXT_SEARCH_PATHS
+            value: "/corredor/usr/*:/corredor/usr"
+          - name: LOG_LEVEL
+            value: debug
+          - name: CORREDOR_LOG_LEVEL
+            value: debug
+          - name: LOG_DEBUG
+            value: "true"
+          - name: CORREDOR_EXEC_CSERVERS_API_BASEURL_TEMPLATE
+            value: {{ include "corredor.exec.cservers.api.baseurl.template" . }}
+          - name: CORREDOR_EXEC_CSERVERS_API_HOST
+            value: {{ include "corredor.corteza.address" . }}
+          - name: CORREDOR_ENVIRONMENT
+            value: dev
+          - name: CORREDOR_EXT_CLIENT_SCRIPTS_WATCH
+            value: "true"
+          - name: CORREDOR_SCRIPTS_AUTO_UPDATE_DEPENDENCIES
+            value: "true"
+          ports:
+            - name: http
+              containerPort: {{ .Values.corredor.service.containerPort }}
+              protocol: TCP
+          startupProbe:
+            failureThreshold: 3
+            # TODO change the below to grpc
+            tcpSocket:
+              port: {{ .Values.corredor.service.containerPort }}
+            initialDelaySeconds: 20
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            {{- toYaml .Values.corredor.resources | nindent 12 }}
+          {{- if .Values.corredor.persistence.enabled }}
+          volumeMounts:
+          - name: corredor-data
+            mountPath: /corredor/usr
+          {{- end }}
+      {{- with .Values.corredor.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.corredor.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.corredor.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.corredor.persistence.enabled }}
+      volumes:
+        - name: corredor-data
+          persistentVolumeClaim:
+            claimName: {{ include "corteza.corredor.fullname" . }}
+      {{- end }}
+{{- end }}

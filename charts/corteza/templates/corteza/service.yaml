@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "corteza.server.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}
+spec:
+  type: {{ .Values.server.service.type }}
+  ports:
+    - port: {{ .Values.server.service.port }}
+      targetPort: {{ .Values.server.service.containerPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "corteza.selectorLabels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}

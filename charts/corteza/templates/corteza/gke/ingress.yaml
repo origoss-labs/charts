@@ -1,0 +1,25 @@
+{{- if and .Values.server.ingress.enabled (eq .Values.server.ingress.controller "gcp") }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "corteza.server.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}
+  annotations:
+    ingressClassName: "gce"
+    {{- if .Values.server.ingress.gcp.managedCertificate.create }}
+    networking.gke.io/managed-certificates: {{ include "corteza.server.fullname" . }}
+    {{- end }}
+    {{- if .Values.server.ingress.gcp.frontendConfig }}
+    networking.gke.io/v1beta1.FrontendConfig: {{ include "corteza.server.fullname" . }}
+    {{- end }}
+    {{- range $key, $value := .Values.server.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  defaultBackend:
+    service:
+      name: {{ include "corteza.server.fullname" . }}
+      port:
+        number: {{ .Values.server.service.port }}
+{{- end }}
