@@ -1,0 +1,30 @@
+apiVersion: v1
+entries:
+  corteza:
+  - apiVersion: v2
+    appVersion: 2023.9.5
+    created: "2024-11-06T12:55:02.365106493Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 14.x.x
+    description: A Helm chart for deploying the Corteza low code platform.
+    digest: 78550416d4011b9bfa38cab52ded19b61b0e1d89c00280c32ed02aea1944f36e
+    home: https://github.com/origoss/charts
+    maintainers:
+    - email: erik.jagyugya@origoss.com
+      name: jagyugyaerik
+      url: https://github.com/jagyugyaerik
+    - email: kornel.david@origoss.com
+      name: davidkornel
+      url: https://github.com/davidkornel
+    - email: david.koterlan@origoss.com
+      name: davidkoterlan
+      url: https://github.com/davidkoterlan
+    name: corteza
+    type: application
+    urls:
+    - https://github.com/origoss-labs/charts/releases/download/corteza-1.0.1/corteza-1.0.1.tgz
+    version: 1.0.1
+generated: "2024-11-06T12:55:02.36511569Z"
