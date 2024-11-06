@@ -1,0 +1,172 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "corteza.server.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}
+spec:
+  {{- if not .Values.server.autoscaling.enabled }}
+  replicas: {{ .Values.server.replicaCount }}
+  {{- end }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "corteza.selectorLabels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.server.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "corteza.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 8 }}
+    spec:
+      {{- with .Values.server.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "corteza.server.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.server.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- tpl (toYaml .Values.server.initContainers) $ | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.server.securityContext | nindent 12 }}
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+          env:
+          {{- if or .Values.postgresql.enabled .Values.externalDatabase.enabled }}
+          - name: DB_DSN
+            valueFrom:
+              secretKeyRef:
+          {{- if .Values.postgresql.enabled }}
+                name: {{ include "corteza.server.fullname" . }}
+                key: db-dsn
+          {{- end }}
+          {{- if .Values.externalDatabase.enabled }}
+                name: {{ .Values.externalDatabase.existingSecret }}
+                key: {{ .Values.externalDatabase.existingSecretPasswordKey }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.corredor.enabled}}
+          - name: CORREDOR_ENABLED
+            value: "true"
+          - name: CORREDOR_ADDR
+            value: {{ include "corteza.corredor.address" . }}
+          {{- end }}
+          - name: DOMAIN
+            value: {{ .Values.global.domain | quote }}
+          - name: HOST
+            value: {{ include "corteza.server.host" . | quote }}
+          - name: ENVIRONMENT
+            value: {{ .Values.server.environment }}
+          - name: AUTH_BASE_URL
+            value: {{ include "corteza.server.authBaseUrl" . | quote }}
+          - name: AUTH_EXTERNAL_REDIRECT_URL
+            value: {{ include "corteza.server.authExternalRedirectUrl" . | quote }}
+          - name: AUTH_DEVELOPMENT_MODE
+            value: {{ .Values.server.auth.development | quote }}
+          - name: APIGW_PROFILER_GLOBAL
+            value: {{ .Values.server.apiGateway.profiler.global | quote }}
+          {{- if .Values.server.locale.enabled }}
+          - name: LOCALE_LANGUAGES
+            value: {{ .Values.server.locale.languages }}
+          - name: LOCALE_PATH
+            value: {{ .Values.server.locale.path | quote }}
+            {{- if .Values.server.locale.enableDevelopmentMode  }}
+          - name: LOCALE_DEVELOPMENT_MODE
+            value: {{ .Values.server.locale.enableDevelopmentMode | quote }}
+            {{- end }}
+          {{- end }}
+          - name: LOCALE_LOG
+            value: {{ .Values.server.log.components.locale | quote }}
+          {{- if .Values.server.assets.path }}
+          - name: HTTP_SERVER_ASSETS_PATH
+            value: {{ .Values.server.assets.path | quote}}
+          {{- end }}
+          {{- if .Values.server.assets.auth.path }}
+          - name: AUTH_ASSETS_PATH
+            value: {{ .Values.server.assets.auth.path | quote }}
+          {{- end }}
+          {{- if .Values.server.webConsole.enabled }}
+          - name: HTTP_SERVER_WEB_CONSOLE_ENABLED
+            value: {{ .Values.server.webConsole.enabled | quote }}
+          {{- end }}
+          - name: LOG_DEBUG
+            value: {{ .Values.server.log.debug | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.server.log.level }}
+          - name: LOG_STACKTRACE_LEVEL
+            value: {{ .Values.server.log.stacktraceLevel }}
+          - name: LOG_INCLUDE_CALLER
+            value: {{ .Values.server.log.includeCaller | quote }}
+          {{- if .Values.server.log.filter }}
+          - name: LOG_FILTER
+            value: {{ .Values.server.log.filter }}
+          {{- end }}
+          - name: HTTP_LOG_REQUEST
+            value: {{ .Values.server.log.components.http.request | quote }}
+          - name: HTTP_LOG_RESPONSE
+            value: {{ .Values.server.log.components.http.response | quote }}
+          - name: RBAC_LOG
+            value: {{ .Values.server.log.components.rbac | quote }}
+          - name: ACTIONLOG_ENABLED
+            value: {{ .Values.server.log.components.actionLog.enabled | quote }}
+          - name: ACTIONLOG_DEBUG
+            value: {{ .Values.server.log.components.actionLog.debug | quote }}
+          - name: ACTIONLOG_WORKFLOW_FUNCTIONS_ENABLED
+            value: {{ .Values.server.log.components.actionLog.workflowFunctions | quote }}
+          - name: APIGW_LOG_ENABLED
+            value: {{ .Values.server.log.components.apiGateway.enabled | quote }}
+          - name: APIGW_LOG_REQUEST_BODY
+            value: {{ .Values.server.log.components.apiGateway.requestBody | quote}}
+          - name: APIGW_PROXY_ENABLE_DEBUG_LOG
+            value: {{ .Values.server.log.components.apiGateway.proxy.debug | quote }}
+          - name: AUTH_LOG_ENABLED
+            value: {{ .Values.server.log.components.auth | quote }}
+          {{- range $key, $value := .Values.server.extraEnv }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.server.service.containerPort }}
+              protocol: TCP
+          startupProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /healthcheck
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+          {{- if .Values.server.persistence.enabled }}
+          volumeMounts:
+          - mountPath: /mnt/corteza
+            name: corteza-data
+          {{- end }}
+      {{- with .Values.server.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.server.persistence.enabled }}
+      volumes:
+        - name: corteza-data
+          persistentVolumeClaim:
+            claimName: {{ include "corteza.server.fullname" . }}
+      {{- end }}

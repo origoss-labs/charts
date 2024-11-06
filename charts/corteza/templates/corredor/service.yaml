@@ -1,0 +1,17 @@
+{{- if .Values.corredor.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "corteza.corredor.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.corredor.name "name" .Values.corredor.name) | nindent 4 }}
+spec:
+  type: {{ .Values.corredor.service.type }}
+  ports:
+    - port: {{ .Values.corredor.service.port }}
+      targetPort: {{ .Values.corredor.service.containerPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "corteza.selectorLabels" (dict "context" . "component" .Values.corredor.name "name" .Values.corredor.name) | nindent 4 }}
+{{- end }}
