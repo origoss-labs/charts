@@ -1,6 +1,6 @@
 # The Home of the Origoss Helm Charts
 
-Helm Charts built, tested and released by [Origoss](origoss.com) are hosted in this repository.
+Helm Charts built, tested and released by [Origoss](https://origoss.com/) are hosted in this repository.
 
 ## Before you begin
 
