@@ -7,6 +7,9 @@ A Helm chart for Corteza, a low-code platform that lets you build and iterate CR
 
 The default installation comes with two example applications (CRM and Case Management) provided by Planet Crust; otherwise, it only includes the building blocks needed to create your own application.
 
+This chart is ideal for quickly deploying the Corteza platform to Kubernetes cluster with optional configurations for specific Ingress controllers and databases.
+
+
 ## Ingress configuration
 
 ### Prerequisites
@@ -15,7 +18,7 @@ You need an Ingress controlled installed in your Kubernetes cluster. Preferably,
 
 ### Google Cloud (GCP) configuration
 
-This configuration is tailored for clusters running on Google Cloud Platform (GCP) and uses the Google Cloud Ingress controller. Select this setup if your cluster is hosted on GCP.
+This configuration is tailored for clusters running on Google Cloud Platform (GCP) and uses the Google Cloud Ingress controller. Select this setup if your cluster is hosted on GCP. Note that the `server.ingress.controller` must be set to `gcp` in order to use the Google Cloud Ingress controller.
 
 ```yaml
 global:
@@ -44,7 +47,7 @@ server:
 
 ### Generic, NGINX Ingress controller configuration
 
-This configuration is designed for use across multiple cloud providers and is compatible with the NGINX Ingress controller.
+This configuration is designed for generic use across different cloud providers and is compatible with the NGINX Ingress controller.
 
 ```yaml
 global:
@@ -54,7 +57,7 @@ server:
   replicaCount: 1
   name: server
   ingress:
-    enabled: false
+    enabled: true
     controller: regular
     className: ""
     annotations:
