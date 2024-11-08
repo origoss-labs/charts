@@ -93,3 +93,36 @@ corredor:
       - ReadWriteOnce
     size: 5Gi
 ```
+
+## PostgreSQL
+
+Persistance is a key element of Corteza. It uses PostgreSQL to store data. To manage your own database in the cluster use the below configuration. The field `externalDatabase.enabled` must be disabled in order to use this configuration.
+
+```yaml
+postgresql:
+  enabled: true
+  auth:
+    enablePostgresUser: true
+    username: "corteza"
+    password: "corteza"
+    database: "corteza"
+  architecture: standalone
+  global:
+    postgresql:
+      service:
+        ports:
+          postgresql: "5432"
+```
+
+## External Database
+
+You may want to have Corteza connect to an external database rather than installing one inside your cluster. Typical reasons for this are to use a managed database service, or to share a common database server for all your applications. To achieve this, the chart allows you to specify credentials for an external database with the externalDatabase parameter.
+
+The `existingSecret` secret should store the database DSN under the `existingSecretPasswordKey` key. This must exist before installing the chart.
+
+```yaml
+externalDatabase:
+  enabled: true
+  existingSecret: postgres-creds
+  existingSecretPasswordKey: db-dsn
+```
