@@ -2,66 +2,114 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+## @section Global variables
+## @param global.domain The domain of the installed Corteza application.
+## @param global.storageClass The storage class for persistent volumes.
+## @param global.insecure Whether to enable insecure communication with the application.
+##
 global:
   domain: &domain ""
   storageClass: ""
   insecure: true
 
+## @section Server configuration
+## @param server.environment The environment to run the server in (development, production, etc.).
+## @param server.name The name of the server service.
+## @param server.nameOverride The name to override the default name.
+##
 server:
   environment: development
   name: server
   nameOverride: ""
+  ## @param server.auth.development When enabled, corteza reloads template before every execution. Enable this for debugging or when developing auth templates.
+  ##
   auth:
     development: "true"
+  ## @param server.webConsole.enabled Enable web console. When running in dev environment, web console is enabled by default.
+  ##
   webConsole:
     enabled: "true"
+  ## @param server.apiGateway.profiler.global When enabled, profiler is enabled for all routes.
+  ##
   apiGateway:
     profiler:
       global: "true"
+  ## @param server.image.repository The repository of the image used to deploy the Corteza application.
+  ## @param server.image.pullPolicy The pull policy for the image used to deploy the Corteza application.
+  ## @param server.image.tag The tag of the image used to deploy the Corteza application. Overrides the image tag whose default is the chart appVersion.
+  ##
   image:
     repository: cortezaproject/corteza
     pullPolicy: IfNotPresent
-    # Overrides the image tag whose default is the chart appVersion.
     tag: "2023.9.7"
+  ## @param server.service.type The service type used to expose the Corteza application.
+  ## @param server.service.port The port on which the server service listens.
+  ## @param server.service.containerPort The port on which the server container listens.
+  ##
   service:
     type: ClusterIP
     port: 80
     containerPort: 80
+  ## @param server.serviceAccount.create Whether a service account should be created.
+  ## @param server.serviceAccount.annotations The annotations to add to the service account.
+  ## @param server.serviceAccount.name The name of the service account to use. If not set and create is true, a name is generated using the fullname template
+  ##
   serviceAccount:
-    # Specifies whether a service account should be created
     create: true
-    # Annotations to add to the service account
     annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
     name: ""
+  ## @param server.ingress.enabled Whether to enable ingress.
+  ## @param server.ingress.controller The controller to use for ingress. Value can be either regular or gcp.
+  ## @param server.ingress.className The class name to use for ingress.
+  ## @param server.ingress.annotations Annotations to use for the created ingress. For NGINX add: kubernetes.io/ingress.class: nginx
+  ##
   ingress:
     enabled: false
-    # Value can be either regular or gcp
     controller: regular
     className: ""
     annotations:
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
+    ## @param server.ingress.hosts[0].host The hosts to use for ingress.
+    ## @param server.ingress.hosts[0].paths[0].path The paths to use for ingress.
+    ## @param server.ingress.hosts[0].paths[0].pathType The path type for the ingress.
+    ##
     hosts:
       - host: *domain
         paths:
           - path: /
             pathType: ImplementationSpecific
+    ## @param server.ingress.tls TLS configuration for the ingress.
+    ##
     tls: []
-    #  - secretName: orca-tls
+    #  - secretName: my-tls
     #    hosts:
     #      - *domain
+    ## @param server.ingress.gcp.backendConfig The backend configuration for Google Cloud Ingress.
+    ## @param server.ingress.gcp.frontendConfig The frontend configuration for Google Cloud Ingress.
+    ##
     gcp:
       backendConfig: {}
       frontendConfig: {}
+      ## The managed certificate configuration for Google Cloud Ingress.
+      ## @param server.ingress.gcp.managedCertificate.create When enabled Google Cloud's managed certificate service will be used for the domain.
+      ## @param server.ingress.gcp.managedCertificate.extraDomains List with the domains that should be handled by Google.
+      ##
       managedCertificate:
         create: true
         extraDomains: []
+  ## @param server.assets.path Corteza will directly serve these assets (static files). When empty path is set (default value), embedded files are used.
+  ## @param server.assets.auth.path Path to js, css, images and template source files. When corteza starts, if path exists it tries to load template files from it. When empty path is set (default value), embedded files are used.
+  ##
   assets:
     path: ""
     auth:
       path: ""
+  ## @param server.locale.enabled When enabled locale languages configuration will take place.
+  ## @param server.locale.languages List of comma delimited languages (language tags) to enable. In case when an enabled language can not be loaded, error is logged.
+  ## @param server.locale.enableDevelopmentMode When enabled, Corteza reloads language files on every request Enable this for debugging or developing.
+  ## @param server.locale.path Path to locale files.
+  ##
   locale:
     enabled: false
     languages: ""
