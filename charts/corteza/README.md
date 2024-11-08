@@ -96,7 +96,7 @@ corredor:
 
 ## PostgreSQL
 
-Persistance is a key element of Corteza. It uses PostgreSQL to store data. To manage your own database in the cluster use the below configuration. The field `externalDatabase.enabled` must be disabled in order to use this configuration.
+Persistance is a key element of Corteza. It uses PostgreSQL to store data. To manage your own database in the cluster use the below configuration. Enabling `externalDatabase` overrides the `postgresql` configuration.
 
 ```yaml
 postgresql:
@@ -112,6 +112,8 @@ postgresql:
       service:
         ports:
           postgresql: "5432"
+externalDatabase:
+  enabled: false
 ```
 
 ## External Database
