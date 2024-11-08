@@ -13,11 +13,14 @@ The default installation comes with two example applications (CRM and Case Manag
 
 You need an Ingress controlled installed in your Kubernetes cluster. Preferably, Nginx Ingress Controller.
 
-### GCP cluster
+### Google Cloud (GCP) configuration
+
+This configuration is tailored for clusters running on Google Cloud Platform (GCP) and uses the Google Cloud Ingress controller. Select this setup if your cluster is hosted on GCP.
 
 ```yaml
 global:
   domain: &domain "yourdomain.com"
+
 server:
   replicaCount: 1
   name: server
@@ -37,4 +40,56 @@ server:
       redirectToHttps:
         enabled: true
         responseCodeName: MOVED_PERMANENTLY_DEFAULT
+```
+
+### Generic, NGINX Ingress controller configuration
+
+This configuration is designed for use across multiple cloud providers and is compatible with the NGINX Ingress controller.
+
+```yaml
+global:
+  domain: &domain "yourdomain.com"
+
+server:
+  replicaCount: 1
+  name: server
+  ingress:
+    enabled: false
+    controller: regular
+    className: ""
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: *domain
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls:
+     - secretName: corteza-test-tls
+       hosts:
+         - *domain
+```
+
+## Corredor
+
+[Corredor](https://github.com/cortezaproject/corteza-server-corredor) is an automation script runner and bundler. It loads and processes provided automation scripts and serves them to the Corteza server backend.
+
+Corredor is disabled by default. To enable it in the chart, use the below configuration.
+
+```yaml
+corredor:
+  enabled: true
+  name: corredor
+  nameOverride: ""
+  image:
+    repository: cortezaproject/corteza-server-corredor
+    tag: "2023.9.2"
+    imagePullPolicy: IfNotPresent
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 5Gi
 ```
