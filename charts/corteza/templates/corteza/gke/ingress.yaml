@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "corteza.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}
   annotations:
-    ingressClassName: "gce"
+    kubernetes.io/ingress.class: "gce"
     {{- if .Values.server.ingress.gcp.managedCertificate.create }}
     networking.gke.io/managed-certificates: {{ include "corteza.server.fullname" . }}
     {{- end }}
