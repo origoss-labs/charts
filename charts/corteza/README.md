@@ -252,6 +252,8 @@ externalDatabase:
 
 ### PostgreSQL configuration
 
+Configuring an external database overrides postgresql configuration.
+
 | Name                                                    | Description                                     | Value        |
 | ------------------------------------------------------- | ----------------------------------------------- | ------------ |
 | `postgresql.enabled`                                    | Enable the installation of PostgreSQL database. | `true`       |
@@ -263,6 +265,8 @@ externalDatabase:
 | `postgresql.global.postgresql.service.ports.postgresql` | Port to listen on for PostgreSQL server.        | `5432`       |
 
 ### External database
+
+Overrides postgresql configuration.
 
 | Name                                         | Description                                                                            | Value   |
 | -------------------------------------------- | -------------------------------------------------------------------------------------- | ------- |

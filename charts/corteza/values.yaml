@@ -327,6 +327,9 @@ corredor:
 
 
 ## @section PostgreSQL configuration
+## @descriptionStart
+## Configuring an external database overrides postgresql configuration.
+## @descriptionEnd
 ## @param postgresql.enabled Enable the installation of PostgreSQL database.
 ##
 postgresql:
@@ -350,8 +353,10 @@ postgresql:
         ports:
           postgresql: "5432"
 
-## Overrides postgresql configuration.
 ## @section External database
+## @descriptionStart
+## Overrides postgresql configuration.
+## @descriptionEnd
 ## @param externalDatabase.enabled Enable using an external PostgresSQL database.
 ## @param externalDatabase.existingSecret Name of the Kubernetes secret containing the external PostgreSQL database credentials.
 ## @param externalDatabase.existingSecretPasswordKey Key in the Kubernetes secret containing the external PostgreSQL database password.
