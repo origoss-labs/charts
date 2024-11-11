@@ -2,114 +2,205 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+## @section Global variables
+## @param global.domain The domain of the installed Corteza application.
+## @param global.storageClass The storage class for persistent volumes.
+## @param global.insecure Whether to enable insecure communication with the application.
+##
 global:
   domain: &domain ""
   storageClass: ""
   insecure: true
 
+## @section Server configuration
+## @param server.environment The environment to run the server in (development, production, etc.).
+## @param server.name The name of the server service.
+## @param server.nameOverride The name to override the default name.
+##
 server:
   environment: development
   name: server
   nameOverride: ""
+  ## @param server.auth.development When enabled, corteza reloads template before every execution. Enable this for debugging or when developing auth templates.
+  ##
   auth:
     development: "true"
+  ## @param server.webConsole.enabled Enable web console. When running in dev environment, web console is enabled by default.
+  ##
   webConsole:
     enabled: "true"
+  ## @param server.apiGateway.profiler.global When enabled, profiler is enabled for all routes.
+  ##
   apiGateway:
     profiler:
       global: "true"
+  ## @param server.image.repository The repository of the image used to deploy the Corteza application.
+  ## @param server.image.pullPolicy The pull policy for the image used to deploy the Corteza application.
+  ## @param server.image.tag The tag of the image used to deploy the Corteza application. Overrides the image tag whose default is the chart appVersion.
+  ##
   image:
     repository: cortezaproject/corteza
     pullPolicy: IfNotPresent
-    # Overrides the image tag whose default is the chart appVersion.
     tag: "2023.9.7"
+  ## @param server.service.type The service type used to expose the Corteza application.
+  ## @param server.service.port The port on which the server service listens.
+  ## @param server.service.containerPort The port on which the server container listens.
+  ##
   service:
     type: ClusterIP
     port: 80
     containerPort: 80
+  ## @param server.serviceAccount.create Whether a service account should be created.
+  ## @param server.serviceAccount.annotations The annotations to add to the service account.
+  ## @param server.serviceAccount.name The name of the service account to use. If not set and create is true, a name is generated using the fullname template
+  ##
   serviceAccount:
-    # Specifies whether a service account should be created
     create: true
-    # Annotations to add to the service account
     annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
     name: ""
+  ## @param server.ingress.enabled Whether to enable ingress.
+  ## @param server.ingress.controller The controller to use for ingress. Value can be either regular or gcp.
+  ## @param server.ingress.className The class name to use for ingress.
+  ## @param server.ingress.annotations Annotations to use for the created ingress. For NGINX add: kubernetes.io/ingress.class: nginx
+  ##
   ingress:
     enabled: false
-    # Value can be either regular or gcp
     controller: regular
     className: ""
     annotations:
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
+    ## @param server.ingress.hosts[0].host The hosts to use for ingress.
+    ## @param server.ingress.hosts[0].paths[0].path The paths to use for ingress.
+    ## @param server.ingress.hosts[0].paths[0].pathType The path type for the ingress.
+    ##
     hosts:
       - host: *domain
         paths:
           - path: /
             pathType: ImplementationSpecific
+    ## @param server.ingress.tls TLS configuration for the ingress.
+    ##
     tls: []
     #  - secretName: my-tls
     #    hosts:
     #      - *domain
+    ## @param server.ingress.gcp.backendConfig The backend configuration for Google Cloud Ingress.
+    ## @param server.ingress.gcp.frontendConfig The frontend configuration for Google Cloud Ingress.
+    ##
     gcp:
       backendConfig: {}
       frontendConfig: {}
+      ## The managed certificate configuration for Google Cloud Ingress.
+      ## @param server.ingress.gcp.managedCertificate.create When enabled Google Cloud's managed certificate service will be used for the domain.
+      ## @param server.ingress.gcp.managedCertificate.extraDomains List with the domains that should be handled by Google.
+      ##
       managedCertificate:
         create: true
         extraDomains: []
+  ## @param server.assets.path Corteza will directly serve these assets (static files). When empty path is set (default value), embedded files are used.
+  ## @param server.assets.auth.path Path to js, css, images and template source files. When corteza starts, if path exists it tries to load template files from it. When empty path is set (default value), embedded files are used.
+  ##
   assets:
     path: ""
     auth:
       path: ""
+  ## @param server.locale.enabled When enabled locale languages configuration will take place.
+  ## @param server.locale.languages List of comma delimited languages (language tags) to enable. In case when an enabled language can not be loaded, error is logged.
+  ## @param server.locale.enableDevelopmentMode When enabled, Corteza reloads language files on every request Enable this for debugging or developing.
+  ## @param server.locale.path Path to locale files.
+  ##
   locale:
     enabled: false
     languages: ""
     enableDevelopmentMode: true
     path: "/mnt/corteza/corteza-locale/"
+  ## @param server.log.debug Disables json format for logging and enables more human-readable output with colors.
+  ## @param server.log.level Minimum logging level. If set to "warn", Levels warn, error, dpanic panic and fatal will be logged. Recommended value for production: warn. Possible values: debug, info, warn, error, dpanic, panic, fatal.
+  ## @param server.log.stacktraceLevel Include stack-trace when logging at a specified level or below. Disable for production. Possible values: debug, info, warn, error, dpanic, panic, fatal.
+  ## @param server.log.includeCaller Set to true to see where the logging was called from. Disable for production.
+  ## @param server.log.filter Log filtering rules by level and name (log-level:log-namespace). Please note that level (LOG_LEVEL) is applied before filter and it affects the final output! Leave unset for production. https://docs.cortezaproject.org/corteza-docs/2023.9/devops-guide/references/configuration/server.html#_log_filter
+  ##
   log:
-    debug: "true"
-    level: debug
+    debug: "false"
+    level: warn
     stacktraceLevel: error
     includeCaller: "false"
-    # https://docs.cortezaproject.org/corteza-docs/2023.9/devops-guide/references/configuration/server.html#_log_filter
     filter: null
     components:
+      ## @param server.log.components.http.request Log HTTP requests.
+      ## @param server.log.components.http.response Log HTTP responses.
+      ##
       http:
         request: false
         response: false
+      ## @param server.log.components.rbac Log RBAC related events and actions.
+      ## @param server.log.components.locale Log locale related events and actions.
+      ## @param server.log.components.auth Enable extra logging for authentication flows
+      ##
       rbac: false
       locale: false
       auth: false
+      ## @param server.log.components.actionLog.enabled Enable action log.
+      ## @param server.log.components.actionLog.debug Enable debug logging for action log.
+      ## @param server.log.components.actionLog.workflowFunctions Enable logging workflow functions.
+      ##
       actionLog:
         enabled: false
         debug: false
         workflowFunctions: false
+      ## @param server.log.components.apiGateway.enabled Enable extra logging API Gateway related events and actions.
+      ## @param server.log.components.apiGateway.requestBody Enable incoming request body output in logs.
+      ## @param server.log.components.apiGateway.proxy.debug Enable full debug log on requests / responses - warning, includes sensitive data.
+      ##
       apiGateway:
         enabled: false
         requestBody: false
         proxy:
           debug: false
+  ## @param server.persistence.enabled Enable persistent storage for the intalled Corteza instance.
+  ## @param server.persistence.storageClass The storage class for the persistent volume.
+  ## @param server.persistence.accessModes The access modes for the persistent volume.
+  ## @param server.persistence.size The size of the persistent volume.
+  ##
   persistence:
     enabled: true
     storageClass: ""
     accessModes:
       - ReadWriteOnce
     size: 5Gi
+  ## @param server.autoscaling.enabled Enable autoscaling for the installed Corteza deployment.
+  ## @param server.autoscaling.minReplicas The minimum number of replicas for the installed Corteza deployment.
+  ## @param server.autoscaling.maxReplicas The maximum number of replicas for the installed Corteza deployment.
+  ## @param server.autoscaling.targetCPUUtilizationPercentage The target CPU utilization percentage for autoscaling.
+  ##
   autoscaling:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
-  # replicaCount is only used when autoscaling is not enabled
+  ## @param server.replicaCount The required number of replicas for the installed Corteza deployment. replicaCount is only used when autoscaling is not enabled.
+  ##
   replicaCount: 1
+  ## @param server.extraEnv An array to add extra env vars.
+  ##
   extraEnv: {}
+  ## @param server.initContainers Add additional init containers to the Corteza server pods.
+  ##
   initContainers: []
+  ## @param server.imagePullSecrets Specify docker-registry secret names as an array. The specified secrets MUST be in the same namespace.
+  ##
   imagePullSecrets: []
+  ## @param server.podAnnotations Annotations for the Corteza pods.
+  ##
   podAnnotations: {}
+  ## @param server.podSecurityContext Security context for the Corteza pods.
+  ##
   podSecurityContext: {}
     # fsGroup: 2000
+  ## @param server.securityContext Security context for the Corteza container.
+  ##
   securityContext: {}
     # capabilities:
     #   drop:
@@ -117,6 +208,9 @@ server:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
     # runAsUser: 1000
+  ## @param server.resources Resource limits and requests for the Corteza server pods.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+  ##
   resources: {}
     # limits:
     #   cpu: 100m
@@ -124,49 +218,87 @@ server:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
+  ## @param server.nodeSelector Node labels for pod assignment.
+  ## @param server.tolerations Tolerations for pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  ## @param server.affinity Affinity settings for pod assignment.
+  ##
   nodeSelector: {}
   tolerations: []
   affinity: {}
 
+## @section Corredor configuration
+## @param corredor.enabled Enable the installation of the Corredor automation script runner and bundler.
+## @param corredor.name Name of the Corredor deployment.
+## @param corredor.nameOverride The name to override the default name.
+##
 corredor:
   enabled: false
   name: corredor
   nameOverride: ""
+  ## @param corredor.image.repository Image repository for the Corredor container image.
+  ## @param corredor.image.tag Image tag for the Corredor container image.
+  ## @param corredor.image.imagePullPolicy Image pull policy for the Corredor container image.
+  ##
   image:
     repository: cortezaproject/corteza-server-corredor
     tag: "2023.9.2"
     imagePullPolicy: IfNotPresent
+  ## @param corredor.service.type Service type for the Corredor service.
+  ## @param corredor.service.port Service port for the Corredor service.
+  ## @param corredor.service.containerPort Service port for the Corredor container.
   service:
     type: ClusterIP
     port: 80
     containerPort: 80
+  ## @param corredor.serviceAccount.create Specifies whether a service account should be created.
+  ## @param corredor.serviceAccount.annotations Annotations to add to the service account.
+  ## @param corredor.serviceAccount.name The name of the service account to use. If not set and create is true, a name is generated using the fullname template.
+  ##
   serviceAccount:
-    # Specifies whether a service account should be created
     create: true
-    # Annotations to add to the service account
     annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
     name: ""
+  ## @param corredor.persistence.enabled Enable persistent storage for the intalled Corredor instance.
+  ## @param corredor.persistence.storageClass The storage class for the persistent volume.
+  ## @param corredor.persistence.accessModes The access modes for the persistent volume.
+  ## @param corredor.persistence.size The size of the persistent volume.
+  ##
   persistence:
     enabled: true
     storageClass: ""
     accessModes:
       - ReadWriteOnce
     size: 5Gi
+  ## @param corredor.autoscaling.enabled Enable autoscaling for the installed corredor deployment.
+  ## @param corredor.autoscaling.minReplicas The minimum number of replicas for the installed corredor deployment.
+  ## @param corredor.autoscaling.maxReplicas The maximum number of replicas for the installed corredor deployment.
+  ## @param corredor.autoscaling.targetCPUUtilizationPercentage The target CPU utilization percentage for autoscaling.
+  ##
   autoscaling:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
-  # replicaCount is only used when autoscaling is not enabled
+  ## @param corredor.replicaCount The required number of replicas for the installed Corredor deployment. replicaCount is only used when autoscaling is not enabled.
+  ##
   replicaCount: 1
+  ## @param corredor.initContainers Add additional init containers to the Corredorx pods.
+  ##
   initContainers: []
+  ## @param corredor.imagePullSecrets Specify docker-registry secret names as an array. The specified secrets MUST be in the same namespace.
+  ##
   imagePullSecrets: []
+  ## @param corredor.podAnnotations Annotations for the Corredor pods.
+  ##
   podAnnotations: {}
+  ## @param corredor.podSecurityContext Security context for the Corredor pods.
+  ##
   podSecurityContext: {}
     # fsGroup: 2000
+  ## @param corredor.securityContext Security context for the Corredor container.
+  ##
   securityContext: {}
     # capabilities:
     #   drop:
@@ -174,6 +306,9 @@ corredor:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
     # runAsUser: 1000
+  ## @param corredor.resources Resource limits and requests for the Corredor server pods.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+  ##
   resources: {}
     # limits:
     #   cpu: 100m
@@ -181,24 +316,50 @@ corredor:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
+  ## @param corredor.nodeSelector Node labels for pod assignment.
+  ## @param corredor.tolerations Tolerations for pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  ## @param corredor.affinity Affinity settings for pod assignment.
+  ##
   nodeSelector: {}
   tolerations: []
   affinity: {}
 
+
+## @section PostgreSQL configuration
+## @descriptionStart
+## Configuring an external database overrides postgresql configuration.
+## @descriptionEnd
+## @param postgresql.enabled Enable the installation of PostgreSQL database.
+##
 postgresql:
   enabled: true
+  ## @param postgresql.auth.enablePostgresUser Enable creating a PostgreSQL user.
+  ## @param postgresql.auth.username Username of the PostgreSQL user.
+  ## @param postgresql.auth.password Password of the PostgreSQL user.
+  ## @param postgresql.auth.database Database name to use.
+  ##
   auth:
     enablePostgresUser: true
     username: "corteza"
     password: "corteza"
     database: "corteza"
+  ## @param postgresql.architecture TODO
   architecture: standalone
+  ## @param postgresql.global.postgresql.service.ports.postgresql Port to listen on for PostgreSQL server.
   global:
     postgresql:
       service:
         ports:
           postgresql: "5432"
 
+## @section External database
+## @descriptionStart
+## Overrides postgresql configuration.
+## @descriptionEnd
+## @param externalDatabase.enabled Enable using an external PostgresSQL database.
+## @param externalDatabase.existingSecret Name of the Kubernetes secret containing the external PostgreSQL database credentials.
+## @param externalDatabase.existingSecretPasswordKey Key in the Kubernetes secret containing the external PostgreSQL database password.
 externalDatabase:
   enabled: false
   existingSecret: ""
