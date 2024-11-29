@@ -1,14 +1,14 @@
+annotations:
+  artifacthub.io/category: integration-delivery
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/images: |
+    - name: corteza
+      image: docker.io/cortezaproject/corteza:2023.9.7
+    - name: corredor
+      image: docker.io/cortezaproject/corteza-server-corredor:2023.9.2
+
 apiVersion: v2
 name: corteza
-
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
 
 # This is the chart version. This version number should be incremented each time you make changes
