@@ -41,7 +41,7 @@ server:
   image:
     repository: cortezaproject/corteza
     pullPolicy: IfNotPresent
-    tag: "2023.9.7"
+    tag: "2024.9.0"
   ## @param server.service.type The service type used to expose the Corteza application.
   ## @param server.service.port The port on which the server service listens.
   ## @param server.service.containerPort The port on which the server container listens.
@@ -119,7 +119,7 @@ server:
   ## @param server.log.level Minimum logging level. If set to "warn", Levels warn, error, dpanic panic and fatal will be logged. Recommended value for production: warn. Possible values: debug, info, warn, error, dpanic, panic, fatal.
   ## @param server.log.stacktraceLevel Include stack-trace when logging at a specified level or below. Disable for production. Possible values: debug, info, warn, error, dpanic, panic, fatal.
   ## @param server.log.includeCaller Set to true to see where the logging was called from. Disable for production.
-  ## @param server.log.filter Log filtering rules by level and name (log-level:log-namespace). Please note that level (LOG_LEVEL) is applied before filter and it affects the final output! Leave unset for production. https://docs.cortezaproject.org/corteza-docs/2023.9/devops-guide/references/configuration/server.html#_log_filter
+  ## @param server.log.filter Log filtering rules by level and name (log-level:log-namespace). Please note that level (LOG_LEVEL) is applied before filter and it affects the final output! Leave unset for production. https://docs.cortezaproject.org/corteza-docs/2024.9/devops-guide/references/configuration/server.html#_log_filter
   ##
   log:
     debug: "false"
@@ -242,7 +242,7 @@ corredor:
   ##
   image:
     repository: cortezaproject/corteza-server-corredor
-    tag: "2023.9.2"
+    tag: "2024.9.0"
     imagePullPolicy: IfNotPresent
   ## @param corredor.service.type Service type for the Corredor service.
   ## @param corredor.service.port Service port for the Corredor service.
