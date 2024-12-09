@@ -3,9 +3,9 @@ annotations:
   artifacthub.io/license: Apache-2.0
   artifacthub.io/images: |
     - name: corteza
-      image: docker.io/cortezaproject/corteza:2023.9.7
+      image: docker.io/cortezaproject/corteza:2024.9.0
     - name: corredor
-      image: docker.io/cortezaproject/corteza-server-corredor:2023.9.2
+      image: docker.io/cortezaproject/corteza-server-corredor:2024.9.0
 
 apiVersion: v2
 name: corteza
@@ -14,13 +14,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 1.0.2
+version: 1.0.3
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "2023.9.5"
+appVersion: "2024.9.0"
 
 description: A Helm chart for deploying the Corteza low code platform.
 home: https://github.com/origoss/charts
