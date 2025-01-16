@@ -45,11 +45,13 @@ server:
   ## @param server.service.type The service type used to expose the Corteza application.
   ## @param server.service.port The port on which the server service listens.
   ## @param server.service.containerPort The port on which the server container listens.
+  ## @param server.service.annotations Annotations of the service.
   ##
   service:
     type: ClusterIP
     port: 80
     containerPort: 80
+    annotations: {}
   ## @param server.serviceAccount.create Whether a service account should be created.
   ## @param server.serviceAccount.annotations The annotations to add to the service account.
   ## @param server.serviceAccount.name The name of the service account to use. If not set and create is true, a name is generated using the fullname template

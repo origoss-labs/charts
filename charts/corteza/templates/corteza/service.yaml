@@ -4,6 +4,12 @@ metadata:
   name: {{ include "corteza.server.fullname" . }}
   labels:
     {{- include "corteza.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}
+  {{- with .Values.server.service.annotations }}
+  annotations:
+    {{- range $key, $value := . }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   type: {{ .Values.server.service.type }}
   ports:
