@@ -127,6 +127,14 @@ spec:
             value: {{ .Values.server.log.components.apiGateway.proxy.debug | quote }}
           - name: AUTH_LOG_ENABLED
             value: {{ .Values.server.log.components.auth | quote }}
+          {{- if .Values.gotenberg.enabled }}
+          - name: TEMPLATE_RENDERER_GOTENBERG_ADDRESS
+            value: {{ include "corteza.gotenberg.address" . }}
+          - name: TEMPLATE_RENDERER_GOTENBERG_ENABLED
+            value: "true"
+          {{- end }}
+          - name: STORAGE_PATH
+            value: "/mnt/corteza/data"
           {{- range $key, $value := .Values.server.extraEnv }}
           - name: {{ $key }}
             value: {{ $value | quote }}
