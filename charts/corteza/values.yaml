@@ -286,7 +286,7 @@ corredor:
   ## @param corredor.replicaCount The required number of replicas for the installed Corredor deployment. replicaCount is only used when autoscaling is not enabled.
   ##
   replicaCount: 1
-  ## @param corredor.initContainers Add additional init containers to the Corredorx pods.
+  ## @param corredor.initContainers Add additional init containers to the Corredor pods.
   ##
   initContainers: []
   ## @param corredor.imagePullSecrets Specify docker-registry secret names as an array. The specified secrets MUST be in the same namespace.
@@ -327,6 +327,86 @@ corredor:
   tolerations: []
   affinity: {}
 
+## @section Gotenberg configuration
+## @param gotenberg.enabled Enable the installation of the Gotenberg pdf renderer tool.
+## @param gotenberg.name Name of the Gotenberg deployment.
+## @param gotenberg.nameOverride The name to override the default name.
+##
+gotenberg:
+  enabled: false
+  name: gotenberg
+  nameOverride: ""
+  ## @param gotenberg.autoscaling.enabled Enable autoscaling for the installed gotenberg deployment.
+  ## @param gotenberg.autoscaling.minReplicas The minimum number of replicas for the installed gotenberg deployment.
+  ## @param gotenberg.autoscaling.maxReplicas The maximum number of replicas for the installed gotenberg deployment.
+  ## @param gotenberg.autoscaling.targetCPUUtilizationPercentage The target CPU utilization percentage for autoscaling.
+  ##
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+  ## @param gotenberg.image.repository Image repository for the Gotenberg container image.
+  ## @param gotenberg.image.tag Image tag for the Gotenberg container image.
+  ## @param gotenberg.image.imagePullPolicy Image pull policy for the Gotenberg container image.
+  ##
+  image:
+    repository: thecodingmachine/gotenberg
+    tag: "6"
+    imagePullPolicy: IfNotPresent
+  ## @param gotenberg.service.type Service type for the Gotenberg service.
+  ## @param gotenberg.service.port Service port for the Gotenberg service.
+  ## @param gotenberg.service.containerPort Service port for the Gotenberg container.
+  service:
+    type: ClusterIP
+    port: 3000
+    containerPort: 3000
+  ## @param gotenberg.serviceAccount.create Specifies whether a service account should be created.
+  ## @param gotenberg.serviceAccount.annotations Annotations to add to the service account.
+  ## @param gotenberg.serviceAccount.name The name of the service account to use. If not set and create is true, a name is generated using the fullname template.
+  ##
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+  ## @param gotenberg.replicaCount The required number of replicas for the installed Gotenberg deployment. replicaCount is only used when autoscaling is not enabled.
+  ##
+  replicaCount: 1
+  ## @param gotenberg.initContainers Add additional init containers to the Gotenberg pods.
+  ##
+  initContainers: []
+  ## @param gotenberg.imagePullSecrets Specify docker-registry secret names as an array. The specified secrets MUST be in the same namespace.
+  ##
+  imagePullSecrets: []
+  ## @param gotenberg.podAnnotations Annotations for the Gotenberg pods.
+  ##
+  podAnnotations: {}
+  ## @param gotenberg.podSecurityContext Security context for the Gotenberg pods.
+  ##
+  podSecurityContext: {}
+    # fsGroup: 2000
+  ## @param gotenberg.securityContext Security context for the Gotenberg container.
+  ##
+  securityContext: {}
+  ## @param gotenberg.resources Resource limits and requests for the Gotenberg server pods.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+  ##
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  ## @param gotenberg.nodeSelector Node labels for pod assignment.
+  ## @param gotenberg.tolerations Tolerations for pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  ## @param gotenberg.affinity Affinity settings for pod assignment.
+  ##
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 ## @section PostgreSQL configuration
 ## @descriptionStart

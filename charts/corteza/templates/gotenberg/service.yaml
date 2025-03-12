@@ -1,0 +1,17 @@
+{{- if .Values.gotenberg.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "corteza.gotenberg.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.gotenberg.name "name" .Values.gotenberg.name) | nindent 4 }}
+spec:
+  type: {{ .Values.gotenberg.service.type }}
+  ports:
+    - port: {{ .Values.gotenberg.service.port }}
+      targetPort: {{ .Values.gotenberg.service.containerPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "corteza.selectorLabels" (dict "context" . "component" .Values.gotenberg.name "name" .Values.gotenberg.name) | nindent 4 }}
+{{- end }}

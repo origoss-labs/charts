@@ -1,0 +1,64 @@
+{{- if .Values.gotenberg.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "corteza.gotenberg.fullname" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.gotenberg.name "name" .Values.gotenberg.name) | nindent 4 }}
+spec:
+  {{- if not .Values.gotenberg.autoscaling.enabled }}
+  replicas: {{ .Values.gotenberg.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "corteza.selectorLabels" (dict "context" . "component" .Values.gotenberg.name "name" .Values.gotenberg.name) | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.gotenberg.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "corteza.labels" (dict "context" . "component" .Values.gotenberg.name "name" .Values.gotenberg.name) | nindent 8 }}
+    spec:
+      {{- with .Values.gotenberg.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "corteza.gotenberg.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.gotenberg.podSecurityContext | nindent 8 }}
+      initContainers:
+        {{- tpl (toYaml .Values.gotenberg.initContainers) $ | nindent 8 }}
+      containers:
+        - image: "{{ .Values.gotenberg.image.repository }}:{{ .Values.gotenberg.image.tag | default "6" }}"
+          imagePullPolicy: {{ .Values.gotenberg.image.imagePullPolicy }}
+          name: gotenberg
+          ports:
+            - name: http
+              containerPort: {{ .Values.gotenberg.service.containerPort }}
+          resources:
+            {{- toYaml .Values.gotenberg.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+                path: /ping
+                port: http
+            readinessProbe:
+            httpGet:
+                path: /ping
+                port: http
+          securityContext:
+          {{- toYaml .Values.gotenberg.podSecurityContext | nindent 12 }}
+      {{- with .Values.gotenberg.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.gotenberg.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.gotenberg.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

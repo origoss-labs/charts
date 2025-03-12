@@ -210,3 +210,33 @@ Create Corredor init clone repo command list
   cp -r corteza-corredor-scripts/client-scripts/compose/* /corredor/usr/client-scripts/compose
   ls /corredor/usr/client-scripts/compose
 {{- end }}
+
+
+{{/*
+Create a default fully qualified app name for corredor.
+*/}}
+{{- define "corteza.gotenberg.fullname" -}}
+{{- if .Values.gotenberg.nameOverride }}
+{{- printf "%s-%s" .Values.gotenberg.nameOverride .Values.gotenberg.name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" (include "corteza.fullname" .) .Values.gotenberg.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account of gotenberg to use
+*/}}
+{{- define "corteza.gotenberg.serviceAccountName" -}}
+{{- if .Values.gotenberg.serviceAccount.create }}
+{{- default (include "corteza.gotenberg.fullname" .) .Values.gotenberg.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.gotenberg.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create address of gotenberg for corteza
+*/}}
+{{- define "corteza.gotenberg.address" -}}
+{{- printf "http://%s:%d" (include "corteza.gotenberg.fullname" .) (.Values.gotenberg.service.containerPort | int) | quote -}}
+{{- end -}}

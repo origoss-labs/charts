@@ -6,8 +6,8 @@ metadata:
   labels:
     {{- include "corteza.labels" (dict "context" . "component" .Values.corredor.name "name" .Values.corredor.name) | nindent 4 }}
 spec:
-  {{- if not .Values.server.autoscaling.enabled }}
-  replicas: {{ .Values.server.replicaCount }}
+  {{- if not .Values.corredor.autoscaling.enabled }}
+  replicas: {{ .Values.corredor.replicaCount }}
   {{- end }}
   strategy:
     type: Recreate
