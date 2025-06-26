@@ -187,7 +187,16 @@ server:
   replicaCount: 1
   ## @param server.extraEnv An array to add extra env vars.
   ##
-  extraEnv: {}
+  extraEnv: []
+    ## - name: "SOME_ENV"
+    ##   value: "some-value"
+  ## @param server.extraEnvFrom An array to pass references of extra env vars.
+  ##
+  extraEnvFrom: []
+    ## - configMapRef:
+    ##     name: config-map-name
+    ## - secretRef:
+    ##     name: secret-name
   ## @param server.initContainers Add additional init containers to the Corteza server pods.
   ##
   initContainers: []
@@ -250,7 +259,7 @@ server:
 ## @param corredor.nameOverride The name to override the default name.
 ##
 corredor:
-  enabled: false
+  enabled: true
   name: corredor
   nameOverride: ""
   ## @param corredor.image.repository Image repository for the Corredor container image.
@@ -341,6 +350,17 @@ corredor:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  ## @param corredor.extraEnv An array to add extra env vars.
+  extraEnv: []
+    ## - name: "SOME_ENV"
+    ##   value: "some-value"
+  ## @param corredor.extraEnvFrom An array to pass references of extra env vars.
+  ##
+  extraEnvFrom: []
+    ## - configMapRef:
+    ##     name: config-map-name
+    ## - secretRef:
+    ##     name: secret-name
 
 ## @section Gotenberg configuration
 ## @param gotenberg.enabled Enable the installation of the Gotenberg pdf renderer tool.

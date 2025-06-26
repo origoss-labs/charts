@@ -57,6 +57,13 @@ spec:
             value: "true"
           - name: CORREDOR_SCRIPTS_AUTO_UPDATE_DEPENDENCIES
             value: "true"
+          {{- with .Values.corredor.extraEnv }}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.corredor.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.corredor.service.containerPort }}
