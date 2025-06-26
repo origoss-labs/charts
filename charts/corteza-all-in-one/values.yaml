@@ -34,8 +34,19 @@ cert-manager:
 # This block is for setting up the corteza for more information can be found here: https://artifacthub.io/packages/helm/corteza/corteza
 corteza:
   enabled: true
-  image:
-    tag: "cortezaproject/corteza"
-    repository: "2024.9.0"
-  extraSecrets:
-  - name:
+  server:
+    image:
+      tag: "cortezaproject/corteza"
+      repository: "2024.9.0"
+    # An additional secret is required when the database is installed separately from the Corteza Helm chart. In other case the variables evaulated automatically.
+    # extraSecrets:
+    # - name: db-dsn
+    #   data:
+    #     db-dsn: dbuser:dbpass@tcp(db:3306)/dbname?collation=utf8mb4_general_ci
+    # extraEnv:
+    # - nmae: DB_DSN
+    #   secretRef:
+    #     name: db-dsn
+      extraEnv:
+        HTTP_WEBAPP_ENABLED: "true"
+        ACTIONLOG_ENABLED: false
