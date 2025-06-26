@@ -135,9 +135,12 @@ spec:
           {{- end }}
           - name: STORAGE_PATH
             value: "/mnt/corteza/data"
-          {{- range $key, $value := .Values.server.extraEnv }}
-          - name: {{ $key }}
-            value: {{ $value | quote }}
+          {{- with .Values.server.extraEnv }}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with .Values.server.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 10 }}
           {{- end }}
           ports:
             - name: http
