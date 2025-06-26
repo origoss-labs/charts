@@ -8,45 +8,66 @@ imagePullSecrets: []
 # This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
-
+global:
+  domain: &domain "localhost"
 # This block is for setting up the ingress for more information can be found here: https://artifacthub.io/packages/helm/bitnami/nginx-ingress-controller
 ingress:
   enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
+  controller:
+    kind: Deployment
+    hostPort:
+      enabled: true
+    ingressClassResource:
+      default: true
+    ingressClass: nginx
+    service:
+      type: NodePort
+    config:
+      enable-real-ip: "true"
+      use-forwarded-headers: "true"
 
 # This block is for setting up the cert-manager for more information can be found here: https://artifacthub.io/packages/helm/cert-manager/cert-manager?modal=install
 cert-manager:
   enabled: false
+  crds:
+    enabled: true
 
 # This block is for setting up the corteza for more information can be found here: https://artifacthub.io/packages/helm/corteza/corteza
 corteza:
   enabled: true
   server:
     image:
-      tag: "cortezaproject/corteza"
-      repository: "2024.9.0"
+      tag: "2024.9.0"
+      repository: "cortezaproject/corteza"
+    ingress:
+      enabled: "{{ .Values.ingress.enabled }}"
+      controller: regular
+      className: nginx
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        kubernetes.io/tls-acme: "true"
+      hosts:
+        - host: *domain
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - *domain
     # An additional secret is required when the database is installed separately from the Corteza Helm chart. In other case the variables evaulated automatically.
     # extraSecrets:
     # - name: db-dsn
     #   data:
     #     db-dsn: dbuser:dbpass@tcp(db:3306)/dbname?collation=utf8mb4_general_ci
-    # extraEnv:
-    # - nmae: DB_DSN
+    # extraEnvFrom:
+    # - name: DB_DSN
     #   secretRef:
     #     name: db-dsn
-      extraEnv:
-        HTTP_WEBAPP_ENABLED: "true"
-        ACTIONLOG_ENABLED: false
+    extraEnv:
+      HTTP_WEBAPP_ENABLED: "true"
+      ACTIONLOG_ENABLED: "false"
+      # - name: HTTP_WEBAPP_ENABLED
+      #   value: "true"
+      # - name: ACTIONLOG_ENABLED
+      #   value: "false"
