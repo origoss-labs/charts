@@ -1,0 +1,12 @@
+dependencies:
+- name: corteza
+  repository: https://origoss-labs.github.io/charts/
+  version: 1.0.6
+- name: nginx-ingress-controller
+  repository: https://charts.bitnami.com/bitnami
+  version: 11.6.25
+- name: cert-manager
+  repository: https://charts.jetstack.io
+  version: v1.18.1
+digest: sha256:ae3bc949fcdc402ce3679bd344ca3998323f95cd0b14ea330b3f0b27e650269c
+generated: "2025-06-26T14:36:07.115189976+02:00"
