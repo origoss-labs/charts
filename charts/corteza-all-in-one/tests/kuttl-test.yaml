@@ -4,6 +4,3 @@ testDirs:
   - ./charts/corteza-all-in-one/tests
 commands:
   - command: helm upgrade --install corteza ./charts/corteza-all-in-one --wait --namespace corteza-test --create-namespace
-
-cleanup:
-  - command: helm uninstall corteza -n corteza-test
