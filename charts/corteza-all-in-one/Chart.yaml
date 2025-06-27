@@ -30,8 +30,8 @@ dependencies:
 - condition: corteza.enabled
   name: corteza
   repository: https://origoss-labs.github.io/charts/
-  version: 1.0.7
-- condition: ingress.enabled
+  version: 1.0.8
+- condition: nginx-ingress-controller.enabled
   name: nginx-ingress-controller
   repository: https://charts.bitnami.com/bitnami
   version: 11.6.25
