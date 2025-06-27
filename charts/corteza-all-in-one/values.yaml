@@ -18,8 +18,6 @@ nginx-ingress-controller:
     type: NodePort
   ingressClassResource:
     default: true
-  service:
-    type: ClusterIP
 
 # This block is for setting up the cert-manager for more information can be found here: https://artifacthub.io/packages/helm/cert-manager/cert-manager?modal=install
 cert-manager:
