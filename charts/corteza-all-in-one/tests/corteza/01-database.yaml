@@ -1,0 +1,8 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: corteza-postgresql
+  namespace: corteza-test
+status:
+  availableReplicas: 1
