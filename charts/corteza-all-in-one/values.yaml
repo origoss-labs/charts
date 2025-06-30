@@ -35,7 +35,7 @@ corteza:
       tag: "2024.9.0"
       repository: "cortezaproject/corteza"
     ingress:
-      enabled: true
+      enabled: false
       controller: regular
       className: nginx
       hosts:
