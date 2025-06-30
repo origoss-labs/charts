@@ -1,0 +1,50 @@
+name: Kuttl Test
+
+# on:
+#   workflow_run:
+#     workflows:
+#       - "pre-commit"
+#     types:
+#       - completed
+on:
+  workflow_dispatch:
+
+jobs:
+  kuttl-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: 
+        k8s_env: [minikube, k3s, kind]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Kubectl
+        uses: marcofranssen/setup-kubectl@v1.3.0
+        with:
+          enable-plugins: true
+          plugins: kuttl
+
+      - name: Check kuttl version
+        run: kubectl kuttl version
+
+      - name: Set up ${{ matrix.k8s_env }}
+        if: matrix.k8s_env == 'minikube'
+        uses: medyagh/setup-minikube@v0.0.10
+
+      - name: Set up ${{ matrix.k8s_env }}
+        if: matrix.k8s_env == 'kind'
+        uses: helm/kind-action@v1.12.0
+
+      - name: Set up ${{ matrix.k8s_env }}
+        if: matrix.k8s_env == 'k3s'
+        uses: debianmaster/actions-k3s@v1.0.5
+
+      - name: Run KUTTL tests
+        run: |
+          kubectl kuttl test --config charts/charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
+      
+      - name: Set up K3s
+        uses: debianmaster/actions-k3s@v1.0.5
