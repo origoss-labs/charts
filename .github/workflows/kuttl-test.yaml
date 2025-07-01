@@ -1,11 +1,5 @@
 name: Kuttl Test
 
-# on:
-#   workflow_run:
-#     workflows:
-#       - "pre-commit"
-#     types:
-#       - completed
 on:
   workflow_dispatch:
 
@@ -71,6 +65,3 @@ jobs:
         run: >
           kubectl-kuttl test
           --config charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
-
-      - name: Delete Minikube
-        run: minikube delete -p test --purge
