@@ -1,15 +1,7 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: corteza-server
+  name: corteza-postgresql
   namespace: corteza-test
-spec:
-  template:
-    spec:
-      containers:
-      - name: corteza
-        envFrom:
-          - configMapRef:
-              name: extra-cm
-          - secretRef:
-              name: extra-secret
+status:
+  availableReplicas: 1
