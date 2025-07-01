@@ -5,6 +5,12 @@ on:
 
 jobs:
   kuttl-test:
+    strategy:
+      matrix:
+        k8s_env:
+          - kind
+          - k3s
+          - minikube
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -46,32 +52,32 @@ jobs:
       - name: Build Helm dependencies
         run: helm dep build charts/corteza-all-in-one
 
+      - name: Set up K3s in docker
+        if: matrix.k8s_env == 'k3s'
+        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+
+      - name: Start K3d cluster
+        if: matrix.k8s_env == 'k3s'
+        run: k3d cluster create test
+
+      # This starts a minikube cluster https://github.com/marketplace/actions/setup-minikube
+      - name: Set up minikube
+        if: matrix.k8s_env == 'minikube'
+        uses: medyagh/setup-minikube@v0.0.19
+        with:
+          start-args: '--force -p test'
+          cpus: 1
+          memory: 2000m
+
       - name: Run KUTTL tests on Kind
+        if: matrix.k8s_env == 'kind'
         run: >
           kubectl-kuttl test
           --start-kind
           --config charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
 
-      - name: Set up K3s in docker
-        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-
-      - name: Start K3d cluster
-        run: k3d cluster create test
-
-      - name: Run KUTTL tests on K3s
-        run: >
-          kubectl-kuttl test
-          --config charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
-
-      - name: Stop K3d cluster
-        run: k3d cluster delete test
-
-      - name: Set up minikube
-        uses: medyagh/setup-minikube@v0.0.19
-        with:
-          start-args: '--wait=all --force -p test'
-
-      - name: Run KUTTL tests on Minikube
+      - name: Run KUTTL tests
+        if: matrix.k8s_env != 'kind'
         run: >
           kubectl-kuttl test
           --config charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
