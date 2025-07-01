@@ -1,0 +1,58 @@
+# Default values for corteza-all-in-one.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+global:
+  domain: &domain "chart-example.local"
+# This block is for setting up the ingress for more information can be found here: https://artifacthub.io/packages/helm/bitnami/nginx-ingress-controller
+nginx-ingress-controller:
+  enabled: false
+  kind: Deployment
+  service:
+    type: NodePort
+  ingressClassResource:
+    default: true
+
+# This block is for setting up the cert-manager for more information can be found here: https://artifacthub.io/packages/helm/cert-manager/cert-manager?modal=install
+cert-manager:
+  enabled: false
+  crds:
+    enabled: true
+
+# This block is for setting up the corteza for more information can be found here: https://artifacthub.io/packages/helm/corteza/corteza
+corteza:
+  corredor:
+    enabled: false
+  enabled: true
+  server:
+    image:
+      tag: "2024.9.0"
+      repository: "cortezaproject/corteza"
+    ingress:
+      enabled: false
+      controller: regular
+      className: nginx
+      hosts:
+        - host: *domain
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+      tls: []
+      #  - secretName: chart-example-tls
+      #    hosts:
+      #      - *domain
+    # extraEnvFrom:
+    # - name: DB_DSN
+    #   secretRef:
+    #     name: db-dsn
+    extraEnv:
+      - name: HTTP_WEBAPP_ENABLED
+        value: "true"
+      - name: ACTIONLOG_ENABLED
+        value: "false"
