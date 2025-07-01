@@ -265,4 +265,42 @@ entries:
     urls:
     - https://github.com/origoss-labs/charts/releases/download/corteza-1.0.1/corteza-1.0.1.tgz
     version: 1.0.1
-generated: "2025-06-27T07:25:34.351637287Z"
+  corteza-all-in-one:
+  - apiVersion: v2
+    appVersion: 2024.9.0
+    created: "2025-07-01T12:49:24.804715948Z"
+    dependencies:
+    - condition: corteza.enabled
+      name: corteza
+      repository: https://origoss-labs.github.io/charts/
+      version: 1.0.8
+    - condition: nginx-ingress-controller.enabled
+      name: nginx-ingress-controller
+      repository: https://charts.bitnami.com/bitnami
+      version: 11.6.25
+    - condition: cert-manager.enabled
+      name: cert-manager
+      repository: https://charts.jetstack.io
+      version: 1.18.1
+    description: A Helm chart for deploying the Corteza low code platform in Kubernetes.
+    digest: 81a573ea0739ad714dcc45b70cfa70cc684de6eea6de7bd8c8da4100e3b0af26
+    home: https://github.com/origoss-labs/charts
+    maintainers:
+    - email: erik.jagyugya@origoss.com
+      name: jagyugyaerik
+      url: https://github.com/jagyugyaerik
+    - email: kornel.david@origoss.com
+      name: davidkornel
+      url: https://github.com/davidkornel
+    - email: david.koterlan@origoss.com
+      name: davidkoterlan
+      url: https://github.com/davidkoterlan
+    - email: igor.turos@origoss.com
+      name: turosigor
+      url: https://github.com/turosigor
+    name: corteza-all-in-one
+    type: application
+    urls:
+    - https://github.com/origoss-labs/charts/releases/download/corteza-all-in-one-0.1.0/corteza-all-in-one-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-07-01T12:49:24.804731878Z"
