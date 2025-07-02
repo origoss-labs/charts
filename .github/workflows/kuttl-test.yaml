@@ -68,7 +68,7 @@ jobs:
         if: matrix.k8s_env == 'minikube'
         uses: medyagh/setup-minikube@v0.0.19
         with:
-          cpus: 1
+          cpus: 2
           memory: 2000m
           minikube-version: '1.35.0'
 
