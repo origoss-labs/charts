@@ -72,7 +72,7 @@ jobs:
           memory: 2000m
           minikube-version: '1.35.0'
 
-      - name: Run KUTTL tests on Kind
+      - name: Run standalone corteza KUTTL tests on Kind
         if: matrix.k8s_env == 'kind'
         run: >
           kubectl-kuttl test
@@ -80,8 +80,36 @@ jobs:
           --kind-config charts/corteza-all-in-one/tests/smoke/config/kind-config.yaml
           --config charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
 
-      - name: Run KUTTL tests
+      - name: Run ingress-enabled KUTTL tests on Kind
+        if: matrix.k8s_env == 'kind'
+        run: >
+          kubectl-kuttl test
+          --start-kind
+          --kind-config charts/corteza-all-in-one/tests/smoke/config/kind-config.yaml
+          --config charts/corteza-all-in-one/tests/smoke/with-ingress/kuttl-test.yaml
+
+      - name: Run cert-manager-enabled KUTTL tests on Kind
+        if: matrix.k8s_env == 'kind'
+        run: >
+          kubectl-kuttl test
+          --start-kind
+          --kind-config charts/corteza-all-in-one/tests/smoke/config/kind-config.yaml
+          --config charts/corteza-all-in-one/tests/smoke/with-cert-manager/kuttl-test.yaml
+
+      - name: Run standalone corteza KUTTL tests
         if: matrix.k8s_env != 'kind'
         run: >
           kubectl-kuttl test
           --config charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
+
+      - name: Run ingress-enabled KUTTL tests
+        if: matrix.k8s_env != 'kind'
+        run: >
+          kubectl-kuttl test
+          --config charts/corteza-all-in-one/tests/smoke/with-ingress/kuttl-test.yaml
+
+      - name: Run cert-manager-enabled KUTTL tests
+        if: matrix.k8s_env != 'kind'
+        run: >
+          kubectl-kuttl test
+          --config charts/corteza-all-in-one/tests/smoke/with-cert-manager/kuttl-test.yaml
