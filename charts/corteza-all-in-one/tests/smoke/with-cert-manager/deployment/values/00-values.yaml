@@ -1,0 +1,12 @@
+global:
+  domain: &domain "localhost"
+
+cert-manager:
+  enabled: true
+  crds:
+    enabled: true
+
+corteza:
+  server:
+    ingress:
+      enabled: false
