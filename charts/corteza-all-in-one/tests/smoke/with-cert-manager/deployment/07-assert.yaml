@@ -1,0 +1,7 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: corteza-cert-manager-webhook
+  namespace: corteza-test
+status:
+  availableReplicas: 1
