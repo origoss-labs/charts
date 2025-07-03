@@ -5,6 +5,12 @@ on:
 
 jobs:
   kuttl-test:
+    strategy:
+      matrix:
+        k8s_env:
+          - kind
+          - k3s
+          - minikube
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,7 +30,8 @@ jobs:
           OS="$(uname | tr '[:upper:]' '[:lower:]')" &&
           ARCH="$(uname -m | sed -e 's/x86_64/amd64/' -e 's/\(arm\)\(64\)\?.*/\1\2/' -e 's/aarch64$/arm64/')" &&
           KREW="krew-${OS}_${ARCH}" &&
-          curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/${KREW}.tar.gz" &&
+          VERSION="v0.4.5" &&
+          curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/${VERSION}/${KREW}.tar.gz" &&
           tar zxvf "${KREW}.tar.gz" &&
           ./"${KREW}" install krew &&
           echo "PATH=${KREW_ROOT:-$HOME/.krew}/bin:$PATH" >> "$GITHUB_ENV"
@@ -35,6 +42,8 @@ jobs:
       # This installs Helm https://github.com/marketplace/actions/helm-tool-installer
       - name: Set up Helm
         uses: azure/setup-helm@v4.3.0
+        with:
+          version: 'v3.17.0'
 
       - name: Set up Helm repositories
         run: >
@@ -46,32 +55,61 @@ jobs:
       - name: Build Helm dependencies
         run: helm dep build charts/corteza-all-in-one
 
-      - name: Run KUTTL tests on Kind
+      - name: Set up K3s in docker
+        if: matrix.k8s_env == 'k3s'
+        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | TAG=v5.8.3 bash
+
+      - name: Start K3d cluster
+        if: matrix.k8s_env == 'k3s'
+        run: k3d cluster create test
+
+      # This starts a minikube cluster https://github.com/marketplace/actions/setup-minikube
+      - name: Set up minikube
+        if: matrix.k8s_env == 'minikube'
+        uses: medyagh/setup-minikube@v0.0.19
+        with:
+          cpus: 2
+          memory: 2000m
+          minikube-version: '1.35.0'
+
+      - name: Run standalone corteza KUTTL tests on Kind
+        if: matrix.k8s_env == 'kind'
         run: >
           kubectl-kuttl test
           --start-kind
+          --kind-config charts/corteza-all-in-one/tests/smoke/config/kind-config.yaml
           --config charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
 
-      - name: Set up K3s in docker
-        run: wget -q -O - https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+      - name: Run ingress-enabled KUTTL tests on Kind
+        if: matrix.k8s_env == 'kind'
+        run: >
+          kubectl-kuttl test
+          --start-kind
+          --kind-config charts/corteza-all-in-one/tests/smoke/config/kind-config.yaml
+          --config charts/corteza-all-in-one/tests/smoke/with-ingress/kuttl-test.yaml
 
-      - name: Start K3d cluster
-        run: k3d cluster create test
+      - name: Run cert-manager-enabled KUTTL tests on Kind
+        if: matrix.k8s_env == 'kind'
+        run: >
+          kubectl-kuttl test
+          --start-kind
+          --kind-config charts/corteza-all-in-one/tests/smoke/config/kind-config.yaml
+          --config charts/corteza-all-in-one/tests/smoke/with-cert-manager/kuttl-test.yaml
 
-      - name: Run KUTTL tests on K3s
+      - name: Run standalone corteza KUTTL tests
+        if: matrix.k8s_env != 'kind'
         run: >
           kubectl-kuttl test
           --config charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
 
-      - name: Stop K3d cluster
-        run: k3d cluster delete test
-
-      - name: Set up minikube
-        uses: medyagh/setup-minikube@v0.0.19
-        with:
-          start-args: '--wait=all --force -p test'
-
-      - name: Run KUTTL tests on Minikube
+      - name: Run ingress-enabled KUTTL tests
+        if: matrix.k8s_env != 'kind'
         run: >
           kubectl-kuttl test
-          --config charts/corteza-all-in-one/tests/smoke/standalone-corteza/kuttl-test.yaml
+          --config charts/corteza-all-in-one/tests/smoke/with-ingress/kuttl-test.yaml
+
+      - name: Run cert-manager-enabled KUTTL tests
+        if: matrix.k8s_env != 'kind'
+        run: >
+          kubectl-kuttl test
+          --config charts/corteza-all-in-one/tests/smoke/with-cert-manager/kuttl-test.yaml

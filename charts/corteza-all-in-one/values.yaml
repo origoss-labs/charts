@@ -23,7 +23,7 @@ nginx-ingress-controller:
 cert-manager:
   enabled: false
   crds:
-    enabled: true
+    enabled: false
 
 # This block is for setting up the corteza for more information can be found here: https://artifacthub.io/packages/helm/corteza/corteza
 corteza:
@@ -47,6 +47,10 @@ corteza:
       #  - secretName: chart-example-tls
       #    hosts:
       #      - *domain
+      ## Annotation for cert-manager to automatically issue a LetsEncrypt certificate
+      #
+      # annotations:
+      #   cert-manager.io/cluster-issuer: "letsencrypt-staging"
     # extraEnvFrom:
     # - name: DB_DSN
     #   secretRef:
