@@ -1,0 +1,7 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: corteza-nginx-ingress-controller-default-backend
+  namespace: corteza-test
+status:
+  availableReplicas: 1
