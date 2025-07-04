@@ -1,0 +1,15 @@
+global:
+  domain: &domain "chart-example.local"
+
+nginx-ingress-controller:
+  enabled: true
+
+corteza:
+  server:
+    ingress:
+      enabled: true
+      hosts:
+        - host: *domain
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
