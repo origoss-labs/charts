@@ -2,5 +2,3 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - command: helm uninstall corteza -n corteza-test
-- command: helm repo remove origoss-labs bitnami jetstack
-- command: rm -rf /charts/corteza-all-in-one/charts
