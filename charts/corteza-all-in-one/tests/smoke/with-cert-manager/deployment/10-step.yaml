@@ -1,0 +1,8 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+apply:
+- manifests/issuer.yaml
+- manifests/certificate.yaml
+assert:
+- 10-assert.yaml
+unitTest: false
