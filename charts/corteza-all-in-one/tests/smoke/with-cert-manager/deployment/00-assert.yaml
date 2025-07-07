@@ -1,0 +1,20 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: certificaterequests.cert-manager.io
+status:
+  acceptedNames:
+    categories:
+    - cert-manager
+    kind: CertificateRequest
+    listKind: CertificateRequestList
+    plural: certificaterequests
+    shortNames:
+    - cr
+    - crs
+    singular: certificaterequest
+  conditions:
+  - status: "True"
+    type: NamesAccepted
+  - status: "True"
+    type: Established
