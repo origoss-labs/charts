@@ -2,7 +2,15 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestSuite
 testDirs:
   - ./charts/corteza-all-in-one/tests/smoke/with-ingress
+namespace: corteza-test
 commands:
+  - command: >
+      helm repo add origoss-labs https://origoss-labs.github.io/charts/ &&
+      helm repo add bitnami https://charts.bitnami.com/bitnami &&
+      helm repo add jetstack https://charts.jetstack.io &&
+      helm repo update
+  - command: >
+      helm dep build ./charts/corteza-all-in-one
   - command: >
       helm upgrade --install corteza ./charts/corteza-all-in-one
       --wait --namespace corteza-test --create-namespace

@@ -1,6 +1,0 @@
-apiVersion: kuttl.dev/v1beta1
-kind: TestStep
-unitTest: false
-commands:
-- command: >
-    echo "$CLUSTER_IP chart-example.local" >> /etc/hosts
