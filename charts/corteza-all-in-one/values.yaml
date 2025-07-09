@@ -9,7 +9,7 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 global:
-  domain: &domain "igor.origoss.com"
+  domain: &domain "example.com"
 # This block is for setting up the ingress for more information can be found here: https://artifacthub.io/packages/helm/bitnami/nginx-ingress-controller
 nginx-ingress-controller:
   enabled: false
