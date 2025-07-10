@@ -303,4 +303,29 @@ entries:
     urls:
     - https://github.com/origoss-labs/charts/releases/download/corteza-all-in-one-0.1.0/corteza-all-in-one-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-01T12:49:24.804731878Z"
+  letsencrypt-issuer:
+  - apiVersion: v2
+    appVersion: 1.18.2
+    created: "2025-07-10T11:31:06.450233624Z"
+    description: A Helm chart for deploying a LetsEncrypt ClusterIssuer
+    digest: 85fdf85443141afdcdcefbfe6393e347d9d1384f68ae3fd63f4928f23b009a2b
+    home: https://github.com/origoss-labs/charts
+    maintainers:
+    - email: erik.jagyugya@origoss.com
+      name: jagyugyaerik
+      url: https://github.com/jagyugyaerik
+    - email: kornel.david@origoss.com
+      name: davidkornel
+      url: https://github.com/davidkornel
+    - email: david.koterlan@origoss.com
+      name: davidkoterlan
+      url: https://github.com/davidkoterlan
+    - email: igor.turos@origoss.com
+      name: turosigor
+      url: https://github.com/turosigor
+    name: letsencrypt-issuer
+    type: application
+    urls:
+    - https://github.com/origoss-labs/charts/releases/download/letsencrypt-issuer-0.1.0/letsencrypt-issuer-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-07-10T11:31:06.450253792Z"
