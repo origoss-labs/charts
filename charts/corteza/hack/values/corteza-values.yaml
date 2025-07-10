@@ -3,7 +3,6 @@
 
 global:
   domain: &domain "corteza.example.com"
-  # insecure: false
 
 corredor:
   enabled: false
@@ -24,10 +23,6 @@ server:
       - secretName: corteza-tls
         hosts:
           - *domain
-  # extraEnvFrom:
-  # - name: DB_DSN
-  #   secretRef:
-  #     name: db-dsn
   extraEnv:
     - name: HTTP_WEBAPP_ENABLED
       value: "true"

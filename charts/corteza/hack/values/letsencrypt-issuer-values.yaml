@@ -9,7 +9,3 @@ solvers:
   - http01:
       ingress:
         ingressClassName: nginx
-  # Uncomment the following lines to use DNS01 solver with Cloudflare
-  # - dns01:
-  #     cloudflare:
-  #       email:
