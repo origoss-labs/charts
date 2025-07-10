@@ -1,0 +1,15 @@
+## This file is used to configure the letsencrypt-issuer helm chart.
+## For more information, see https://artifacthub.io/packages/helm/corteza/letsencrypt-issuer
+environment: staging
+email: email@example.com
+## Staging URL: https://acme-staging-v02.api.letsencrypt.org/directory
+## Production URL: https://acme-v02.api.letsencrypt.org/directory
+issuerUrl: ""
+solvers:
+  - http01:
+      ingress:
+        ingressClassName: nginx
+  # Uncomment the following lines to use DNS01 solver with Cloudflare
+  # - dns01:
+  #     cloudflare:
+  #       email:

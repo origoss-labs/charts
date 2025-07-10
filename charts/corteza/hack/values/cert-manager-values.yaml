@@ -1,0 +1,5 @@
+## This file is used to configure the cert-manager helm chart.
+## For more information, see https://artifacthub.io/packages/helm/cert-manager/cert-manager
+crds:
+  enabled: true
+  keep: true

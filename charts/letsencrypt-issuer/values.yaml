@@ -1,0 +1,30 @@
+# Default values for letsencrypt-issuer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+## @param .environment Environment for the letsencrypt ClusterIssuer. Default is "staging".
+##
+environment: staging
+## @param .email Email address for the letsencrypt ClusterIssuer. Letsencrypt sends alerts and notifications to this address.
+##
+email: email@example.com
+## @param .issuerUrl URL of the ACME server. If not set, it will default to the staging URL.
+## Staging URL: https://acme-staging-v02.api.letsencrypt.org/directory
+## Production URL: https://acme-v02.api.letsencrypt.org/directory
+##
+issuerUrl: ""
+## @param .solvers Solvers for the letsencrypt ClusterIssuer.
+##
+solvers:
+  - http01:
+      ingress:
+        ingressClassName: nginx
+  # Uncomment the following lines to use DNS01 solver with Cloudflare
+  # - dns01:
+  #     cloudflare:
+  #       email:
