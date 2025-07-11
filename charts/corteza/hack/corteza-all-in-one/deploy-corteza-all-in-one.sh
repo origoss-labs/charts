@@ -4,9 +4,48 @@ set -euo pipefail
 
 DIRNAME=$(dirname "$(readlink -f "$0")")
 
+# Parsing command line flags
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --nginx-ingress-controller)
+            NGINX_INGRESS_CONTROLLER="enabled"
+            shift
+            ;;
+        --cert-manager)
+            CERT_MANAGER="enabled"
+            shift
+            ;;
+        --letsencrypt)
+            LETSENCRYPT="enabled"
+            shift
+            ;;
+        --corteza)
+            CORTEZA="enabled"
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: $0 [--nginx-ingress-controller] [--cert-manager] [--letsencrypt] [--corteza]"
+            echo "Options:"
+            echo "  --nginx-ingress-controller   Install NGINX Ingress Controller"
+            echo "  --cert-manager               Install cert-manager"
+            echo "  --letsencrypt                Install Let's Encrypt ClusterIssuer"
+            echo "  --corteza                    Install Corteza"
+            echo "  -h, --help                   Show this help message"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [--nginx-ingress-controller] [--cert-manager] [--letsencrypt] [--corteza]"
+            echo "Use --help for more information."
+            exit 1
+            ;;
+    esac
+done
+
 # This block sets up the helm commands to install the components.
 HELM_COMMAND="helm upgrade --install"
 COMMON_ARGS="--create-namespace --wait"
+
 
 # NGINX Ingress Controller command
 NGINX_HELM_ARGS="$COMMON_ARGS \
