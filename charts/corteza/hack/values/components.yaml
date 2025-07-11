@@ -1,4 +1,0 @@
-corteza: true
-nginx-ingress-controller: true
-cert-manager: true
-letsencrypt: true

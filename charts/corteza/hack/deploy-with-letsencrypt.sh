@@ -4,74 +4,82 @@ set -euo pipefail
 
 DIRNAME=$(dirname "$(readlink -f "$0")")
 
-echo "Determining which components to install..."
-CORTEZA_ENABLED=$(grep corteza "$DIRNAME"/values/components.yaml | awk '{print $2}')
-CERT_MANAGER_ENABLED=$(grep cert-manager "$DIRNAME"/values/components.yaml | awk '{print $2}')
-NGINX_INGRESS_ENABLED=$(grep nginx-ingress-controller "$DIRNAME"/values/components.yaml | awk '{print $2}')
-LETSENCRYPT_ENABLED=$(grep letsencrypt "$DIRNAME"/values/components.yaml | awk '{print $2}')
+# This block sets up the helm commands to install the components.
+HELM_COMMAND="helm upgrade --install"
+COMMON_ARGS="--create-namespace --wait"
 
-if [[ "$NGINX_INGRESS_ENABLED" == "true" ]]; then
+# NGINX Ingress Controller command
+NGINX_HELM_ARGS="$COMMON_ARGS \
+--namespace nginx-ingress \
+--version 11.6.26 \
+-f $DIRNAME/values/nginx-values.yaml \
+--repo https://charts.bitnami.com/bitnami"
+
+NGINX_HELM_COMMAND="$HELM_COMMAND nginx-ingress nginx-ingress-controller $NGINX_HELM_ARGS"
+
+# Cert-Manager command
+CERT_MANAGER_HELM_ARGS="$COMMON_ARGS \
+--namespace cert-manager \
+--version 1.18.2 \
+-f $DIRNAME/values/cert-manager-values.yaml \
+--repo https://charts.jetstack.io"
+
+CERT_MANAGER_HELM_COMMAND="$HELM_COMMAND cert-manager cert-manager $CERT_MANAGER_HELM_ARGS"
+
+# Let's Encrypt ClusterIssuer command
+LETSENCRYPT_HELM_ARGS="$COMMON_ARGS \
+--version 0.1.0 \
+-f $DIRNAME/values/letsencrypt-issuer-values.yaml \
+--repo https://origoss-labs.github.io/charts"
+
+LETSENCRYPT_HELM_COMMAND="$HELM_COMMAND letsencrypt-issuer letsencrypt-issuer $LETSENCRYPT_HELM_ARGS"
+
+# Corteza command
+CORTEZA_HELM_ARGS="$COMMON_ARGS \
+--namespace corteza \
+--version 1.0.8 \
+-f $DIRNAME/values/corteza-values.yaml \
+--repo https://origoss-labs.github.io/charts"
+
+CORTEZA_HELM_COMMAND="$HELM_COMMAND corteza corteza $CORTEZA_HELM_ARGS"
+
+echo "The following components will be installed:"
+for component in CORTEZA NGINX_INGRESS_CONTROLLER CERT_MANAGER LETSENCRYPT; do
+    if [[ "${!component:-}" != "" ]]; then
+        echo "- $component"
+    fi
+done
+
+if [[ -n "${NGINX_INGRESS_CONTROLLER:-}" ]]; then
     echo "Installing nginx-ingress controller..."
-    helm upgrade --install nginx-ingress nginx-ingress-controller \
-        --namespace ingress-nginx \
-        --create-namespace \
-        --version 11.6.26 \
-        -f "$DIRNAME"/values/nginx-values.yaml \
-        --repo https://charts.bitnami.com/bitnami \
-        --wait
-else
-    echo "Skipping nginx-ingress-controller installation."
-    echo "When using other ingress controllers, ensure you correctly specify the ingress class in the Corteza values file."
+    $NGINX_HELM_COMMAND
 fi
 
-if [[ "$CERT_MANAGER_ENABLED" == "true" ]]; then
+if [[ -n "${CERT_MANAGER:-}" ]]; then
     echo "Installing cert-manager..."
-    helm upgrade --install cert-manager cert-manager \
-        --namespace cert-manager \
-        --create-namespace \
-        --version 1.18.2 \
-        -f "$DIRNAME"/values/cert-manager-values.yaml \
-        --repo https://charts.jetstack.io \
-        --wait
-else
-    echo "Skipping cert-manager installation."
-    echo "Let's Encrypt will not work without cert-manager, as it creates a custom resource defined by cert-manager. Ensure you have cert-manager installed before proceeding."
+    $CERT_MANAGER_HELM_COMMAND
 fi
 
-if [[ "$LETSENCRYPT_ENABLED" == "true" ]]; then
+if [[ -n "${LETSENCRYPT:-}" ]]; then
+    if [[ -z "${CERT_MANAGER:-}" ]]; then
+        if kubectl get deployment -l app=cert-manager -A -o jsonpath='{.items[0]}' >/dev/null 2>&1; then
+            echo "Cert-manager is already installed, proceeding with Let's Encrypt installation."
+        else
+            echo "Error: Let's Encrypt requires cert-manager to be installed first. Install cert-manager or enable it and re-run this script."
+            exit 1
+        fi
+    fi
+
     echo "Installing Let's Encrypt ClusterIssuer..."
-    helm upgrade --install letsencrypt-issuer letsencrypt-issuer \
-        --version 0.1.0 \
-        -f "$DIRNAME"/values/letsencrypt-issuer-values.yaml \
-        --repo https://origoss-labs.github.io/charts \
-        --wait
+    $LETSENCRYPT_HELM_COMMAND
 
     echo "Fetching ClusterIssuer name..."
     CLUSTER_ISSUER_NAME=$(kubectl get clusterissuer -l app.kubernetes.io/instance=letsencrypt-issuer -o jsonpath='{.items[0].metadata.name}')
-else
-    echo "Skipping Let's Encrypt installation."
-    echo "WARNING: You must manually create a ClusterIssuer for Corteza to work with Let's Encrypt."
-    echo "After creating the ClusterIssuer, run the following command to install corteza:"
-    echo -e "helm upgrade --install corteza corteza \\
-    --namespace corteza \\
-    --create-namespace \\
-    --version 1.0.8 \\
-    -f $DIRNAME/values/corteza-values.yaml \\
-    --repo https://origoss-labs.github.io/charts \\
-    --set server.ingress.annotations.'cert-manager.io/cluster-issuer'='<CLUSTER_ISSUER_NAME>'"
-    exit 0
+
+    CORTEZA_HELM_COMMAND="$CORTEZA_HELM_COMMAND --set-string server.ingress.annotations.cert-manager\\.io/cluster-issuer=$CLUSTER_ISSUER_NAME"
 fi
 
-if [[ "$CORTEZA_ENABLED" == "true" ]]; then
+if [[ -n "${CORTEZA:-}" ]]; then
     echo "Installing Corteza..."
-    helm upgrade --install corteza corteza \
-        --namespace corteza \
-        --create-namespace \
-        --version 1.0.8 \
-        -f "$DIRNAME"/values/corteza-values.yaml \
-        --repo https://origoss-labs.github.io/charts \
-        --wait \
-        --set server.ingress.annotations."cert-manager\.io/cluster-issuer"="$CLUSTER_ISSUER_NAME"
-else
-    echo "Skipping Corteza installation."
+    $CORTEZA_HELM_COMMAND
 fi
