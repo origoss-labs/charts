@@ -4,6 +4,13 @@ set -euo pipefail
 
 DIRNAME=$(dirname "$(readlink -f "$0")")
 
+# Default values for flags
+# These can be overridden by environment variables or command line flags
+NGINX_INGRESS_CONTROLLER=${NGINX_INGRESS_CONTROLLER:-""}
+CERT_MANAGER=${CERT_MANAGER:-""}
+LETSENCRYPT=${LETSENCRYPT:-""}
+CORTEZA=${CORTEZA:-""}
+
 # Parsing command line flags
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -82,6 +89,7 @@ CORTEZA_HELM_ARGS="$COMMON_ARGS \
 
 CORTEZA_HELM_COMMAND="$HELM_COMMAND corteza corteza $CORTEZA_HELM_ARGS"
 
+# Determine which components to install
 echo "The following components will be installed:"
 for component in CORTEZA NGINX_INGRESS_CONTROLLER CERT_MANAGER LETSENCRYPT; do
     if [[ "${!component:-}" != "" ]]; then
@@ -89,6 +97,7 @@ for component in CORTEZA NGINX_INGRESS_CONTROLLER CERT_MANAGER LETSENCRYPT; do
     fi
 done
 
+# Install components
 if [[ -n "${NGINX_INGRESS_CONTROLLER:-}" ]]; then
     echo "Installing nginx-ingress controller..."
     $NGINX_HELM_COMMAND
@@ -100,6 +109,7 @@ if [[ -n "${CERT_MANAGER:-}" ]]; then
 fi
 
 if [[ -n "${LETSENCRYPT:-}" ]]; then
+    # Check if cert-manager is installed before installing Let's Encrypt
     if [[ -z "${CERT_MANAGER:-}" ]]; then
         if kubectl get deployment -l app=cert-manager -A -o jsonpath='{.items[0]}' >/dev/null 2>&1; then
             echo "Cert-manager is already installed, proceeding with Let's Encrypt installation."
@@ -112,6 +122,7 @@ if [[ -n "${LETSENCRYPT:-}" ]]; then
     echo "Installing Let's Encrypt ClusterIssuer..."
     $LETSENCRYPT_HELM_COMMAND
 
+    # Fetch the ClusterIssuer name and set it in the Corteza Helm command
     echo "Fetching ClusterIssuer name..."
     CLUSTER_ISSUER_NAME=$(kubectl get clusterissuer -l app.kubernetes.io/instance=letsencrypt-issuer -o jsonpath='{.items[0].metadata.name}')
 
