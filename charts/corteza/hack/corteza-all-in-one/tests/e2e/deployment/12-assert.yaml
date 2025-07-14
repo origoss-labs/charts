@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: CertificateRequest
+metadata:
+  name: corteza-tls-1
+  namespace: corteza
+status:
+  conditions:
+  - message: Certificate request has been approved by cert-manager.io
+    reason: cert-manager.io
+    status: "True"
+    type: Approved
+  - type: Ready
+    status: "False"

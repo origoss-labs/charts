@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- command: helm uninstall letsencrypt
+- command: helm uninstall nginx-ingress -n nginx-ingress
+- command: helm uninstall cert-manager -n cert-manager
+- command: helm uninstall corteza -n corteza

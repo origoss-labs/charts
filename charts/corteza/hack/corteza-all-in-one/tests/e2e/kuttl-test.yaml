@@ -1,0 +1,12 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestSuite
+testDirs:
+  - ./charts/corteza/hack/corteza-all-in-one/tests/e2e
+namespace: corteza-test
+commands:
+  - command: >
+      ./charts/corteza/hack/corteza-all-in-one/deploy-corteza-all-in-one.sh
+      --nginx-ingress-controller
+      --cert-manager
+      --letsencrypt
+      --corteza
