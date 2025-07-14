@@ -1,0 +1,6 @@
+server:
+  extraEnvFrom:
+    - configMapRef:
+        name: extra-cm
+    - secretRef:
+        name: extra-secret

@@ -1,0 +1,11 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestSuite
+testDirs:
+  - ./charts/corteza/tests/smoke
+namespace: corteza-test
+commands:
+  - command: >
+      helm upgrade --install corteza ./charts/corteza
+      --wait
+      --namespace corteza-test
+      --create-namespace
