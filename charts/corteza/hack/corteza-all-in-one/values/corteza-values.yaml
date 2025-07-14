@@ -1,0 +1,30 @@
+## This file is used to configure the corteza helm chart.
+## For more information, see https://artifacthub.io/packages/helm/corteza/corteza
+
+global:
+  domain: &domain "corteza.example.com"
+
+corredor:
+  enabled: false
+server:
+  image:
+    tag: "2024.9.0"
+    repository: "cortezaproject/corteza"
+  ingress:
+    enabled: true
+    controller: regular
+    className: nginx
+    hosts:
+      - host: *domain
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls:
+      - secretName: corteza-tls
+        hosts:
+          - *domain
+  extraEnv:
+    - name: HTTP_WEBAPP_ENABLED
+      value: "true"
+    - name: ACTIONLOG_ENABLED
+      value: "false"
