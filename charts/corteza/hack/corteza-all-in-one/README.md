@@ -87,28 +87,29 @@ externalDatabase:
 
 The **PostgreSQL** subchart allows creating scheduled backups using Cronjobs. The Cronjob creates a Job at the scheduled time, which saves the dumped data to a Persistent Volume. To schedule a backup, see the example below.
 ``` yaml
-postgresql:
-  backup:
-    enabled: true
-    cronjob:
-      # The schedule parameter can be configured using standard cronjob syntax, or macros. For further information, see https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-syntax.
-      schedule: "@daily"
-      command:
-        - "/bin/bash"
-        - "-c"
-        - "PGPASSWORD=\"${PGPASSWORD:-$(< \"$PGPASSFILE\")}\" pg_dumpall --clean --if-exists --load-via-partition-root --quote-all-identifiers --file=\"${PGDUMP_DIR}/pg_dumpall-$(date '+%Y-%m-%d-%H-%M').pgdump\""
-      # Extra volume to mount the postgresql password.
-      extraVolumeMounts:
-        - name: postgres-password
-          mountPath: /opt/bitnami/postgresql/secrets/
-      extraVolumes:
-        - name: postgres-password
-          secret:
-            secretName: corteza-postgresql
-            defaultMode: 420
-      storage:
-        # Required for Helm to keep the Persistent Volume when uninstalling the chart.
-        resourcePolicy: keep
+corteza:
+  postgresql:
+    backup:
+      enabled: true
+      cronjob:
+        # The schedule parameter can be configured using standard cronjob syntax, or macros. For further information, see https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-syntax.
+        schedule: "@daily"
+        command:
+          - "/bin/bash"
+          - "-c"
+          - "PGPASSWORD=\"${PGPASSWORD:-$(< \"$PGPASSFILE\")}\" pg_dumpall --clean --if-exists --load-via-partition-root --quote-all-identifiers --file=\"${PGDUMP_DIR}/pg_dumpall-$(date '+%Y-%m-%d-%H-%M').pgdump\""
+        # Extra volume to mount the postgresql password.
+        extraVolumeMounts:
+          - name: postgres-password
+            mountPath: /opt/bitnami/postgresql/secrets/
+        extraVolumes:
+          - name: postgres-password
+            secret:
+              secretName: corteza-postgresql
+              defaultMode: 420
+        storage:
+          # Required for Helm to keep the Persistent Volume when uninstalling the chart.
+          resourcePolicy: keep
 
 ```
 
@@ -116,12 +117,13 @@ postgresql:
 
 To restore a backup from a Persistent Volume, the user can configure the PostgreSQL instance to use the Volume as data source. See the example below:
 ``` yaml
-postgresql:
-  primary:
-    persistence:
-      dataSource:
-        name: corteza-postgresql-pgdumpall
-        kind: PersistentVolumeClaim
+corteza:
+  postgresql:
+    primary:
+      persistence:
+        dataSource:
+          name: corteza-postgresql-pgdumpall
+          kind: PersistentVolumeClaim
 
 ```
 > Note: Only a new **PostgreSQL** instance can be configured to use a data source. Restoring a backup to a running database is not possible.
