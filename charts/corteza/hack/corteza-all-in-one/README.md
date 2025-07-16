@@ -72,6 +72,63 @@ Install only cert-manager and Corteza (manually managed TLS):
 CORTEZA="enabled" CERT_MANAGER="enabled" ./deploy-corteza-all-in-one.sh
 ```
 
+## PostgreSQL
+The **Corteza** chart includes the **[PostgreSQL](https://artifacthub.io/packages/helm/bitnami/postgresql)** chart as a subchart. The user has the option to use an external database for their application, by setting the `externalDatabase.enabled` value to true in the `values/corteza-values.yaml` file. If so, a Secret should be created with the external database's credentials, and the values file should be configured like this:
+``` yaml
+corteza:
+  externalDatabase:
+    enabled: true
+    existingSecret: <secret-name>
+    existingSecretPasswordKey: <key-of-secret-to-password>
+
+```
+
+### Backup and Restore
+#### Backup
+
+The **PostgreSQL** subchart allows creating scheduled backups using Cronjobs. The Cronjob creates a Job at the scheduled time, which saves the dumped data to a Persistent Volume. To schedule a backup, see the example below.
+``` yaml
+corteza:
+  postgresql:
+    backup:
+      enabled: true
+      cronjob:
+        # The schedule parameter can be configured using standard cronjob syntax, or macros. For further information, see https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-syntax.
+        schedule: "@daily"
+        command:
+          - "/bin/bash"
+          - "-c"
+          - "PGPASSWORD=\"${PGPASSWORD:-$(< \"$PGPASSFILE\")}\" pg_dumpall --clean --if-exists --load-via-partition-root --quote-all-identifiers --file=\"${PGDUMP_DIR}/pg_dumpall-$(date '+%Y-%m-%d-%H-%M').pgdump\""
+        # Extra volume to mount the postgresql password.
+        extraVolumeMounts:
+          - name: postgres-password
+            mountPath: /opt/bitnami/postgresql/secrets/
+        extraVolumes:
+          - name: postgres-password
+            secret:
+              secretName: corteza-postgresql
+              defaultMode: 420
+        storage:
+          # Required for Helm to keep the Persistent Volume when uninstalling the chart.
+          resourcePolicy: keep
+
+```
+
+#### Restore
+
+To restore a backup from a Persistent Volume, the user can configure the PostgreSQL instance to use the Volume as data source. See the example below:
+``` yaml
+corteza:
+  postgresql:
+    primary:
+      persistence:
+        dataSource:
+          name: corteza-postgresql-pgdumpall
+          kind: PersistentVolumeClaim
+
+```
+> Note: Only a new **PostgreSQL** instance can be configured to use a data source. Restoring a backup to a running database is not possible.
+
 # Notes
 - The **Let's Encrypt Issuer** chart deploys a custom resource defined by the **cert-manager** helm chart. If `--letsencrypt` is enabled but `--cert-manager` is not, the script will check whether **cert-manager** is already deployed. If not, it exits with an error.
 - The script dynamically sets the `cert-manager.io/cluster-issuer` annotation on Corteza's Ingress based on the deployed **Let's Encrypt Issuer**. If the user deploys their own Issuer, they should annotate the corteza server's Ingress with the following:
