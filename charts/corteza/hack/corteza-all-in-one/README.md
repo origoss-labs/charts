@@ -75,10 +75,11 @@ CORTEZA="enabled" CERT_MANAGER="enabled" ./deploy-corteza-all-in-one.sh
 ## PostgreSQL
 The **Corteza** chart includes the **[PostgreSQL](https://artifacthub.io/packages/helm/bitnami/postgresql)** chart as a subchart. The user has the option to use an external database for their application, by setting the `externalDatabase.enabled` value to true in the `values/corteza-values.yaml` file. If so, a Secret should be created with the external database's credentials, and the values file should be configured like this:
 ``` yaml
-externalDatabase:
-  enabled: true
-  existingSecret: <secret-name>
-  existingSecretPasswordKey: <key-of-secret-to-password>
+corteza:
+  externalDatabase:
+    enabled: true
+    existingSecret: <secret-name>
+    existingSecretPasswordKey: <key-of-secret-to-password>
 
 ```
 
