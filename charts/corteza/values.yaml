@@ -41,7 +41,7 @@ server:
   image:
     repository: cortezaproject/corteza
     pullPolicy: IfNotPresent
-    tag: "2024.9.0"
+    tag: "2024.9.3"
   ## @param server.service.type The service type used to expose the Corteza application.
   ## @param server.service.port The port on which the server service listens.
   ## @param server.service.containerPort The port on which the server container listens.
