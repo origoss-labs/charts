@@ -141,6 +141,8 @@ Some environments require some setting up, in order to properly bind the host to
 
 ## Minikube
 
+Minikube makes use of several types of drivers, allowing running the cluster either on a virtual machine, or in a container. Therefore, accessing the cluster's storage differs based on the driver chosen.
+
 Some hypervisors have built-in host folder sharing. Driver mounts are reliable with good performance, but the paths are not predictable across operating systems or hypervisors:
 |    Driver    |   OS    | HostFolder |       VM       |
 | ------------ | ------- | ---------- | -------------- |
@@ -168,9 +170,24 @@ Depending on what storage provisioner is used, the container's path to the stora
 
 ## K3s
 
-K3s comes with Rancher's Local Path Provisioner and this enables the ability to create persistent volume claims out of the box using local storage on the respective node. Because the cluster runs on the host system natively, it requires no further configuration, the Persistent Volumes can be reached in:
+[K3s](https://docs.k3s.io/) comes with Rancher's Local Path Provisioner and this enables the ability to create persistent volume claims out of the box using local storage on the respective node. Because the cluster runs on the host system natively, it requires no further configuration, the Persistent Volumes can be reached in:
 `/var/lib/rancher/k3s/storage/`. The Volumes are represented as directories here, following the convention of `<pv-name>_<namespace>_<pvc-name>`.
 
+## Kind
+
+[KinD](https://kind.sigs.k8s.io/) runs a light-weight cluster in a Docker container. It comes preconfigured with a Local Path Provisioner, and thus is also able to dynamically provision Persistent Volumes. The default path of the Volumes inside the container is `/var/local-path-provisioner/`, with the Volumes represented as directories, following the same convention as the ones in [K3s](#k3s).
+
+To reach the volumes from the host, extra volumes can be mounted on the cluster. Assuming a `/home/user/corteza-data/` directory on the host is created, here's an example `kind-config.yaml`:
+``` yaml
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+nodes:
+- role: control-plane
+  extraMounts:
+  - hostPath: /home/user/corteza-data/
+    containerPath: /var/local-path-provisioner/
+
+```
 
 # Notes
 - The **Let's Encrypt Issuer** chart deploys a custom resource defined by the **cert-manager** helm chart. If `--letsencrypt` is enabled but `--cert-manager` is not, the script will check whether **cert-manager** is already deployed. If not, it exits with an error.
