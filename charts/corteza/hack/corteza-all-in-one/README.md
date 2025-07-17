@@ -168,6 +168,9 @@ Depending on what storage provisioner is used, the container's path to the stora
 
 ## K3s
 
+K3s comes with Rancher's Local Path Provisioner and this enables the ability to create persistent volume claims out of the box using local storage on the respective node. Because the cluster runs on the host system natively, it requires no further configuration, the Persistent Volumes can be reached in:
+`/var/lib/rancher/k3s/storage/`. The Volumes are represented as directories here, following the convention of `<pv-name>_<namespace>_<pvc-name>`.
+
 
 # Notes
 - The **Let's Encrypt Issuer** chart deploys a custom resource defined by the **cert-manager** helm chart. If `--letsencrypt` is enabled but `--cert-manager` is not, the script will check whether **cert-manager** is already deployed. If not, it exits with an error.
