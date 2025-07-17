@@ -2,7 +2,7 @@
 ## For more information, see https://artifacthub.io/packages/helm/corteza/corteza
 
 global:
-  domain: &domain "corteza.example.com"
+  domain: &domain "corteza.yourdomain.com"
 
 corredor:
   enabled: false

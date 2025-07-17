@@ -1,0 +1,9 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  generateName: cm-acme-http-solver-
+  namespace: corteza
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: corteza.yourdomain.com

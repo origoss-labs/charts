@@ -1,0 +1,7 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-ingress-nginx-ingress-controller-default-backend
+  namespace: nginx-ingress
+status:
+  availableReplicas: 1
