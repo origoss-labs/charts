@@ -129,6 +129,66 @@ corteza:
 ```
 > Note: Only a new **PostgreSQL** instance can be configured to use a data source. Restoring a backup to a running database is not possible.
 
+# Storage
+
+The **Corteza** and **PostgreSQL** charts use Persistent Volumes to store application data, including Backups. The Volumes are dynamically created and can be reached on the host machine in a directory, based on the Container Storage Interface. By default, there are 2 folders related to the charts, each representing a Persistent Volume:
+- `corteza-server`
+- `data-corteza-postgresql-0`
+
+If backups are configured, a third folder is present, called `corteza-postgresql-pgdumpall`. As the **PostgreSQL** chart does not enable an advanced Backup and Restore management, the *pgdumps* in this directory can be altered, parsed or moved to another storage to better suit the specific need. E.g.: We would like to restore the database, but not to the latest backup's state, rather some earlier version. In this case, moving or removing the *pgdumps* created after the one we need allows us to create a database pointing to the backup's Persistent Volume Claim, which spins the database up using the latest data in the Volume.
+
+Some environments require some setting up, in order to properly bind the host to the cluster.
+
+## Minikube
+
+Minikube makes use of several types of drivers, allowing running the cluster either on a virtual machine, or in a container. Therefore, accessing the cluster's storage differs based on the driver chosen.
+
+Some hypervisors have built-in host folder sharing. Driver mounts are reliable with good performance, but the paths are not predictable across operating systems or hypervisors:
+|    Driver    |   OS    | HostFolder |       VM       |
+| ------------ | ------- | ---------- | -------------- |
+|  Virtualbox  |  Linux  | /home      | /hosthome      |
+|  Virtualbox  |  macOS  | /Users     | /Users         |
+|  Virtualbox  | Windows | C://Users  | /c/Users       |
+|VMWare Fusion |  macOS  | /Users     | /mnt/hgfs/Users|
+|     KVM      |  Linux  | Unsupported|       -        |
+|  HyperKit    |  macOS  | /home      | See below      |
+
+These mounts can be disabled by passing `--disable-driver-mounts` to `minikube start`.
+
+HyperKit mounts can use the following flags:
+- `--nfs-share=[]`: Local folders to share with Guest via NFS mounts
+- `--nfs-shares-root='/nfsshares'`: Where to root the NFS Shares, defaults to /nfsshares
+
+### Docker driver
+
+Running minikube with Docker (or podman) as driver runs the cluster in a container, which means the Persistent Volumes only exist inside it. In order to reach the stored files, a path of the host must be mounted to minikube's container. This can be done by running a command:
+```sh
+minikube mount <path/to/storage>:<minikube/path/to/storage> --uid 1001 --gid 1001
+```
+Depending on what storage provisioner is used, the container's path to the storage differs. For simplicity's sake, we assume the default `storage-provisioner` is utilized. In this case, the storage can be found inside the container in `/tmp/hostpath-provisioner/corteza/`.
+> Note: The `corteza` subpath is created based on the namespace **PostgreSQL** is deployed in. If modified, keep this in mind!
+
+## K3s
+
+[K3s](https://docs.k3s.io/) comes with Rancher's Local Path Provisioner and this enables the ability to create persistent volume claims out of the box using local storage on the respective node. Because the cluster runs on the host system natively, it requires no further configuration, the Persistent Volumes can be reached in:
+`/var/lib/rancher/k3s/storage/`. The Volumes are represented as directories here, following the convention of `<pv-name>_<namespace>_<pvc-name>`.
+
+## Kind
+
+[KinD](https://kind.sigs.k8s.io/) runs a light-weight cluster in a Docker container. It comes preconfigured with a Local Path Provisioner, and thus is also able to dynamically provision Persistent Volumes. The default path of the Volumes inside the container is `/var/local-path-provisioner/`, with the Volumes represented as directories, following the same convention as the ones in [K3s](#k3s).
+
+To reach the volumes from the host, extra volumes can be mounted on the cluster. Assuming a `/home/user/corteza-data/` directory on the host is created, here's an example `kind-config.yaml`:
+``` yaml
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+nodes:
+- role: control-plane
+  extraMounts:
+  - hostPath: /home/user/corteza-data/
+    containerPath: /var/local-path-provisioner/
+
+```
+
 # Notes
 - The **Let's Encrypt Issuer** chart deploys a custom resource defined by the **cert-manager** helm chart. If `--letsencrypt` is enabled but `--cert-manager` is not, the script will check whether **cert-manager** is already deployed. If not, it exits with an error.
 - The script dynamically sets the `cert-manager.io/cluster-issuer` annotation on Corteza's Ingress based on the deployed **Let's Encrypt Issuer**. If the user deploys their own Issuer, they should annotate the corteza server's Ingress with the following:
