@@ -1,0 +1,20 @@
+{{- if and .Values.postgresoperator.enabled .Values.postgresql.enabled -}}
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: {{ include "corteza.postgresql.fullname" $ }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" .Values.postgresql.name "name" .Values.postgresql.name) | nindent 4 }}
+spec:
+  teamId: {{ .Values.postgresql.teamId | default "corteza" }}
+  volume:
+    size: {{ .Values.postgresql.volume.size }}
+    storageClass: {{ .Values.postgresql.volume.storageClass }}
+  numberOfInstances: {{ .Values.postgresql.instances}}
+  users:
+    {{- .Values.postgresql.users | toYaml | nindent 4 }}
+  databases:
+    {{- .Values.postgresql.databases | toYaml | nindent 4 }}
+  postgresql:
+    version: {{ .Values.postgresql.version | quote | default "17" }}
+{{- end -}}
