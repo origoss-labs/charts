@@ -1,3 +1,4 @@
+{{- if .Values.server.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -202,3 +203,4 @@ spec:
           persistentVolumeClaim:
             claimName: {{ include "corteza.server.fullname" . }}
       {{- end }}
+{{- end }}

@@ -1,4 +1,4 @@
-{{- if and .Values.server.ingress.enabled (eq .Values.server.ingress.controller "regular") -}}
+{{- if and (.Values.server.ingress.enabled (eq .Values.server.ingress.controller "regular")) .Values.server.enabled -}}
 {{- $fullName := include "corteza.server.fullname" . -}}
 {{- $svcPort := .Values.server.service.port -}}
 {{- if and .Values.server.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}

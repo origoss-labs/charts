@@ -13,11 +13,13 @@ global:
   insecure: true
 
 ## @section Server configuration
+## @param server.enabled Enable the installation of the Corteza server application.
 ## @param server.environment The environment to run the server in (development, production, etc.).
 ## @param server.name The name of the server service.
 ## @param server.nameOverride The name to override the default name.
 ##
 server:
+  enabled: true
   environment: development
   name: server
   nameOverride: ""
