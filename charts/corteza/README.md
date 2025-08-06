@@ -9,6 +9,37 @@ The default installation comes with two example applications (CRM and Case Manag
 
 This chart is ideal for quickly deploying the Corteza platform to Kubernetes cluster with optional configurations for specific Ingress controllers and databases.
 
+## Installation
+
+Since switching to [Zalando's Postgres Operator](https://github.com/zalando/postgres-operator.git), the Corteza chart must be installed in two steps. The reason for that is that the PostgreSQL database is now deployed by Zalando's operator using a Custom Resource, which must first be defined by the operator's chart.
+
+### 1. Deploy Operator with CRDs
+
+Disable each component in the `values.yaml` except `postgresoperator`, then install the chart. As the operator spins up, it creates the necessary CRDs, allowing the deployment of the rest of the components. Minimal example `values.yaml`:
+``` yaml
+# 01-values.yaml
+postgresoperator:
+  enabled: true
+
+server:
+  enabled: false
+corredor:
+  enabled: false
+gotenberg:
+  enabled: false
+postgresql:
+  enabled: false
+externalDatabase:
+  enabled: false
+```
+
+``` sh
+helm install my-corteza corteza/corteza -f 01-values.yaml
+```
+
+### 2. Deploy the rest of the chart
+
+After the CRDs and the operator are installed, the rest of the chart's components can be enabled and deployed as necessary.
 
 ## Ingress configuration
 
@@ -99,22 +130,21 @@ corredor:
 
 ## PostgreSQL
 
-Persistance is a key element of Corteza. It uses PostgreSQL to store data. To manage your own database in the cluster use the below configuration. Enabling `externalDatabase` overrides the `postgresql` configuration.
+Persistance is a key element of Corteza. It uses PostgreSQL managed by [Zalando's Postgres Operator](https://github.com/zalando/postgres-operator.git) to store data. To manage your own database in the cluster use the below configuration. Enabling `externalDatabase` overrides the `postgresql` configuration.
+
+> **IMPORTANT**
+>
+> The Postgres Operator deploys the PostgreSQL database using a Custom Resource Definition. When installing the chart for the first time, disable each component in the `values.yaml` except `postgresoperator`. As the operator spins up, it creates the necessary CRDs, allowing the deployment of the rest of the components. After enabling the components in the values file, run `helm install` again.
 
 ```yaml
 postgresql:
   enabled: true
-  auth:
-    enablePostgresUser: true
-    username: "corteza"
-    password: "corteza"
-    database: "corteza"
-  architecture: standalone
-  global:
-    postgresql:
-      service:
-        ports:
-          postgresql: "5432"
+  name: postgresql
+  version: "17"
+  volume:
+    size: 8Gi
+    storageClass: ""
+  instances: 1
 externalDatabase:
   enabled: false
 ```
@@ -123,13 +153,16 @@ externalDatabase:
 
 You may want to have Corteza connect to an external database rather than installing one inside your cluster. Typical reasons for this are to use a managed database service, or to share a common database server for all your applications. To achieve this, the chart allows you to specify credentials for an external database with the externalDatabase parameter.
 
-The `existingSecret` secret should store the database DSN under the `existingSecretPasswordKey` key. This must exist before installing the chart.
+The chart constructs the connection string to the database using environmental variables, provided in the `values.yaml` below.
 
 ```yaml
 externalDatabase:
   enabled: true
-  existingSecret: postgres-creds
-  existingSecretPasswordKey: db-dsn
+  auth:
+    username: ""
+    password: ""
+    host: ""
+    database: ""
 ```
 
 ## Parameters
@@ -258,12 +291,11 @@ Configuring an external database overrides postgresql configuration.
 | Name                                                    | Description                                     | Value        |
 | ------------------------------------------------------- | ----------------------------------------------- | ------------ |
 | `postgresql.enabled`                                    | Enable the installation of PostgreSQL database. | `true`       |
-| `postgresql.auth.enablePostgresUser`                    | Enable creating a PostgreSQL user.              | `true`       |
-| `postgresql.auth.username`                              | Username of the PostgreSQL user.                | `corteza`    |
-| `postgresql.auth.password`                              | Password of the PostgreSQL user.                | `corteza`    |
-| `postgresql.auth.database`                              | Database name to use.                           | `corteza`    |
-| `postgresql.architecture`                               | TODO                                            | `standalone` |
-| `postgresql.global.postgresql.service.ports.postgresql` | Port to listen on for PostgreSQL server.        | `5432`       |
+| `postgresql.name`                                       | The name of the PostgreSQL database.            | `postgresql` |
+| `postgresql.version`                                    | Major version of the PostgreSQL database.       | `17`         |
+| `postgresql.volume.size`                                | Size of the PostgreSQL database storage.        | `8Gi`        |
+| `postgresql.volume.storageClass`                        | Storage class for the PV of the database.       | `""`         |
+| `postgresql.instances`                                  | Number of database instances.                   | `1`          |
 
 ### External database
 
@@ -272,5 +304,7 @@ Overrides postgresql configuration.
 | Name                                         | Description                                                                            | Value   |
 | -------------------------------------------- | -------------------------------------------------------------------------------------- | ------- |
 | `externalDatabase.enabled`                   | Enable using an external PostgresSQL database.                                         | `false` |
-| `externalDatabase.existingSecret`            | Name of the Kubernetes secret containing the external PostgreSQL database credentials. | `""`    |
-| `externalDatabase.existingSecretPasswordKey` | Key in the Kubernetes secret containing the external PostgreSQL database password.     | `""`    |
+| `externalDatabase.auth.username`             | The username used to log in to the external database.                                  | `""`    |
+| `externalDatabase.auth.password`             | The password used to log in to the external database.                                  | `""`    |
+| `externalDatabase.auth.host`                 | The address of the external PostgreSQL database.                                       | `""`    |
+| `externalDatabase.auth.database`             | The name of the database to be used by corteza.                                        | `""`    |
