@@ -1,4 +1,4 @@
-{{- if and .Values.postgresoperator.enabled .Values.postgresql.enabled -}}
+{{- if and .Values.postgresoperator.enabled .Values.postgresql.enabled (not .Values.externalDatabase.enabled) -}}
 apiVersion: "acid.zalan.do/v1"
 kind: postgresql
 metadata:
