@@ -480,26 +480,9 @@ postgresql:
   volume:
     size: 8Gi
     storageClass: ""
-  ## @param postgresql.teamId The team ID for the PostgreSQL database.
-  ##
-  teamId: "corteza"
   ## @param postgresql.instances The number of PostgreSQL instances.
   ##
   instances: 1
-  ## @param postgresql.users The users to create in the PostgreSQL database.
-  ## @param postgresql.users.zalando The Zalando user with superuser and created
-  ## @param postgresql.users.corteza The Corteza user with no special privileges.
-  ##
-  users:
-    zalando:
-      - superuser
-      - createdb
-    corteza:
-      - createdb
-  ## @param postgresql.databases The databases to create in the PostgreSQL database.
-  ## @param postgresql.databases.corteza The Corteza database owned by the Corteza user.
-  databases:
-    corteza: corteza
 ## @section External database
 ## @descriptionStart
 ## Overrides postgresql configuration.

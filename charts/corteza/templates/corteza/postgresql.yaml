@@ -6,15 +6,19 @@ metadata:
   labels:
     {{- include "corteza.labels" (dict "context" . "component" .Values.postgresql.name "name" .Values.postgresql.name) | nindent 4 }}
 spec:
-  teamId: {{ .Values.postgresql.teamId | default "corteza" }}
+  teamId: corteza
   volume:
     size: {{ .Values.postgresql.volume.size }}
     storageClass: {{ .Values.postgresql.volume.storageClass }}
   numberOfInstances: {{ .Values.postgresql.instances}}
   users:
-    {{- .Values.postgresql.users | toYaml | nindent 4 }}
+    zalando:
+      - superuser
+      - createdb
+    corteza:
+      - createdb
   databases:
-    {{- .Values.postgresql.databases | toYaml | nindent 4 }}
+    corteza: corteza
   postgresql:
     version: {{ .Values.postgresql.version | quote | default "17" }}
 {{- end -}}

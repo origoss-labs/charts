@@ -45,7 +45,6 @@ spec:
             value: {{ include "corteza.corredor.address" . }}
           {{- end }}
           {{- if or (and .Values.postgresoperator.enabled .Values.postgresql.enabled) .Values.externalDatabase.enabled }}
-          {{ $users := keys .Values.postgresql.users -}}
           - name: DB_USER
             {{- if .Values.externalDatabase.enabled }}
             value: {{ .Values.externalDatabase.auth.username | quote }}
@@ -68,7 +67,7 @@ spec:
             {{- if .Values.externalDatabase.enabled }}
             value: {{ .Values.externalDatabase.auth.database | quote }}
             {{- else }}
-            value: {{ keys .Values.postgresql.databases | first | quote }}
+            value: corteza
             {{- end }}
           - name: DB_HOST
             {{- if .Values.externalDatabase.enabled }}
