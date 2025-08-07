@@ -15,18 +15,12 @@ Since switching to [Zalando's Postgres Operator](https://github.com/zalando/post
 
 ### 1. Deploy Operator with CRDs
 
-Disable each component in the `values.yaml` except `postgresoperator`, then install the chart. As the operator spins up, it creates the necessary CRDs, allowing the deployment of the rest of the components. Minimal example `values.yaml`:
+Disable the `postgresql` component in the `values.yaml`, then install the chart. As the operator spins up, it creates the necessary CRDs, allowing the deployment of the PostgreSQL database. Minimal example `values.yaml`:
 ``` yaml
 # 01-values.yaml
 postgresoperator:
   enabled: true
 
-server:
-  enabled: false
-corredor:
-  enabled: false
-gotenberg:
-  enabled: false
 postgresql:
   enabled: false
 externalDatabase:
@@ -39,7 +33,7 @@ helm install my-corteza corteza/corteza -f 01-values.yaml
 
 ### 2. Deploy the rest of the chart
 
-After the CRDs and the operator are installed, the rest of the chart's components can be enabled and deployed as necessary.
+After the CRDs and the operator are installed, the database can be enabled and deployed.
 
 ## Ingress configuration
 
@@ -134,7 +128,7 @@ Persistance is a key element of Corteza. It uses PostgreSQL managed by [Zalando'
 
 > **IMPORTANT**
 >
-> The Postgres Operator deploys the PostgreSQL database using a Custom Resource Definition. When installing the chart for the first time, disable each component in the `values.yaml` except `postgresoperator`. As the operator spins up, it creates the necessary CRDs, allowing the deployment of the rest of the components. After enabling the components in the values file, run `helm install` again.
+> The Postgres Operator deploys the PostgreSQL database using a Custom Resource Definition. When installing the chart for the first time, disable the `postgresql` component in the `values.yaml`. As the operator spins up, it creates the necessary CRDs, allowing the deployment of the PostgreSQL database. After enabling the database in the values file, run `helm upgrade`.
 
 ```yaml
 postgresql:
