@@ -28,3 +28,5 @@ server:
       value: "true"
     - name: ACTIONLOG_ENABLED
       value: "false"
+postgresql:
+  enabled: true
