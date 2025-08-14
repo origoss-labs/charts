@@ -83,7 +83,7 @@ LETSENCRYPT_HELM_COMMAND="$HELM_COMMAND letsencrypt-issuer letsencrypt-issuer $L
 # Corteza command
 CORTEZA_HELM_ARGS="$COMMON_ARGS \
 --namespace corteza \
---version 1.0.8 \
+--version 2.0.0 \
 -f $DIRNAME/values/corteza-values.yaml \
 --repo https://origoss-labs.github.io/charts"
 
@@ -130,6 +130,9 @@ if [[ -n "${LETSENCRYPT:-}" ]]; then
 fi
 
 if [[ -n "${CORTEZA:-}" ]]; then
-    echo "Installing Corteza..."
+    echo "Installing Corteza with PostgreSQL disabled..."
+    $CORTEZA_HELM_COMMAND --set postgresql.enabled=false
+    echo "Components and CRDs installed successfully."
+    echo "Deploying PostgreSQL instance..."
     $CORTEZA_HELM_COMMAND
 fi
