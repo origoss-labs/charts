@@ -73,69 +73,23 @@ CORTEZA="enabled" CERT_MANAGER="enabled" ./deploy-corteza-all-in-one.sh
 ```
 
 ## PostgreSQL
-The **Corteza** chart includes the **[PostgreSQL](https://artifacthub.io/packages/helm/bitnami/postgresql)** chart as a subchart. The user has the option to use an external database for their application, by setting the `externalDatabase.enabled` value to true in the `values/corteza-values.yaml` file. If so, a Secret should be created with the external database's credentials, and the values file should be configured like this:
+The **Corteza** chart includes the **[Zalando Postgres Operator](https://github.com/zalando/postgres-operator)** chart as a subchart, which manages the PostgreSQL instance using a Custom Resource. The user has the option to use an external database for their application, by setting the `externalDatabase.enabled` value to true in the `values/corteza-values.yaml` file. If so, the external database's credentials should be supplied in the values file, like this:
 ``` yaml
-corteza:
-  externalDatabase:
-    enabled: true
-    existingSecret: <secret-name>
-    existingSecretPasswordKey: <key-of-secret-to-password>
+externalDatabase:
+  enabled: true
+  auth:
+    username: "db-username"
+    password: "db-password"
+    host: "db-host-address"
+    database: "db-name"
 
 ```
-
-### Backup and Restore
-#### Backup
-
-The **PostgreSQL** subchart allows creating scheduled backups using Cronjobs. The Cronjob creates a Job at the scheduled time, which saves the dumped data to a Persistent Volume. To schedule a backup, see the example below.
-``` yaml
-corteza:
-  postgresql:
-    backup:
-      enabled: true
-      cronjob:
-        # The schedule parameter can be configured using standard cronjob syntax, or macros. For further information, see https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-syntax.
-        schedule: "@daily"
-        command:
-          - "/bin/bash"
-          - "-c"
-          - "PGPASSWORD=\"${PGPASSWORD:-$(< \"$PGPASSFILE\")}\" pg_dumpall --clean --if-exists --load-via-partition-root --quote-all-identifiers --file=\"${PGDUMP_DIR}/pg_dumpall-$(date '+%Y-%m-%d-%H-%M').pgdump\""
-        # Extra volume to mount the postgresql password.
-        extraVolumeMounts:
-          - name: postgres-password
-            mountPath: /opt/bitnami/postgresql/secrets/
-        extraVolumes:
-          - name: postgres-password
-            secret:
-              secretName: corteza-postgresql
-              defaultMode: 420
-        storage:
-          # Required for Helm to keep the Persistent Volume when uninstalling the chart.
-          resourcePolicy: keep
-
-```
-
-#### Restore
-
-To restore a backup from a Persistent Volume, the user can configure the PostgreSQL instance to use the Volume as data source. See the example below:
-``` yaml
-corteza:
-  postgresql:
-    primary:
-      persistence:
-        dataSource:
-          name: corteza-postgresql-pgdumpall
-          kind: PersistentVolumeClaim
-
-```
-> Note: Only a new **PostgreSQL** instance can be configured to use a data source. Restoring a backup to a running database is not possible.
 
 # Storage
 
-The **Corteza** and **PostgreSQL** charts use Persistent Volumes to store application data, including Backups. The Volumes are dynamically created and can be reached on the host machine in a directory, based on the Container Storage Interface. By default, there are 2 folders related to the charts, each representing a Persistent Volume:
+The **Corteza** and **Postgres Operator** charts use Persistent Volumes to store application data.. The Volumes are dynamically created and can be reached on the host machine in a directory, based on the Container Storage Interface. By default, there are 2 folders related to the charts, each representing a Persistent Volume:
 - `corteza-server`
-- `data-corteza-postgresql-0`
-
-If backups are configured, a third folder is present, called `corteza-postgresql-pgdumpall`. As the **PostgreSQL** chart does not enable an advanced Backup and Restore management, the *pgdumps* in this directory can be altered, parsed or moved to another storage to better suit the specific need. E.g.: We would like to restore the database, but not to the latest backup's state, rather some earlier version. In this case, moving or removing the *pgdumps* created after the one we need allows us to create a database pointing to the backup's Persistent Volume Claim, which spins the database up using the latest data in the Volume.
+- `pgdata-corteza-postgresql-0`
 
 Some environments require some setting up, in order to properly bind the host to the cluster.
 
