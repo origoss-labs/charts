@@ -9,3 +9,10 @@ commands:
       --wait
       --namespace corteza-test
       --create-namespace
+      --set postgresql.enabled=false
+  - command: >
+      helm upgrade --install corteza ./charts/corteza
+      --wait
+      --namespace corteza-test
+      --create-namespace
+      --set postgresql.enabled=true
