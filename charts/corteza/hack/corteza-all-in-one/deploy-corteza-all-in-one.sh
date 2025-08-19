@@ -87,7 +87,7 @@ CORTEZA_HELM_ARGS="$COMMON_ARGS \
 -f $DIRNAME/values/corteza-values.yaml \
 --repo https://origoss-labs.github.io/charts"
 
-CORTEZA_HELM_COMMAND="$HELM_COMMAND corteza corteza $CORTEZA_HELM_ARGS"
+CORTEZA_HELM_COMMAND="$HELM_COMMAND corteza $DIRNAME/../.. $CORTEZA_HELM_ARGS"
 
 # Determine which components to install
 echo "The following components will be installed:"
@@ -130,8 +130,11 @@ if [[ -n "${LETSENCRYPT:-}" ]]; then
 fi
 
 if [[ -n "${CORTEZA:-}" ]]; then
-    echo "Installing Corteza with PostgreSQL disabled..."
-    $CORTEZA_HELM_COMMAND --set postgresql.enabled=false
+    echo "Checking for CRDs..."
+    if ! kubectl get crd | grep -q 'postgresqls'; then
+        echo "Installing Corteza with PostgreSQL disabled..."
+        $CORTEZA_HELM_COMMAND --set postgresql.enabled=false
+    fi
     echo "Components and CRDs installed successfully."
     echo "Deploying PostgreSQL instance..."
     $CORTEZA_HELM_COMMAND

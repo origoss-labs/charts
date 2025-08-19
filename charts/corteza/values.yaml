@@ -443,33 +443,46 @@ gotenberg:
   tolerations: []
   affinity: {}
 
-## @section PostgreSQL configuration
+## @section PostgreSQL Operator configuration
 ## @descriptionStart
-## Configuring an external database overrides postgresql configuration.
+## Configuring an external database overrides postgresql operator configuration.
+## For further information on PostgreSQL Operator, see https://artifacthub.io/packages/helm/postgres-operator/postgres-operator.
+## @descriptionEnd
+## @param postgresoperator.enabled Enable the installation of PostgreSQL Operator.
+postgresoperator:
+  enabled: true
+  ## @param postgresoperator.image.registry The registry of the PostgreSQL Operator image.
+  ## @param postgresoperator.image.repository The repository of the PostgreSQL Operator image.
+  ## @param postgresoperator.image.tag The tag of the PostgreSQL Operator image.
+  ## @param postgresoperator.image.pullPolicy The pull policy for the PostgreSQL Operator image.
+  ##
+  image:
+    registry: ghcr.io
+    repository: zalando/postgres-operator
+    tag: v1.14.0
+    pullPolicy: "IfNotPresent"
+## @section PostgreSQL Database configuration
+## @descriptionStart
+## PostgreSQL database configuration.
 ## @descriptionEnd
 ## @param postgresql.enabled Enable the installation of PostgreSQL database.
-##
 postgresql:
   enabled: true
-  ## @param postgresql.auth.enablePostgresUser Enable creating a PostgreSQL user.
-  ## @param postgresql.auth.username Username of the PostgreSQL user.
-  ## @param postgresql.auth.password Password of the PostgreSQL user.
-  ## @param postgresql.auth.database Database name to use.
+  ## @param postgresql.name The name of the PostgreSQL database.
   ##
-  auth:
-    enablePostgresUser: true
-    username: "corteza"
-    password: "corteza"
-    database: "corteza"
-  ## @param postgresql.architecture TODO
-  architecture: standalone
-  ## @param postgresql.global.postgresql.service.ports.postgresql Port to listen on for PostgreSQL server.
-  global:
-    postgresql:
-      service:
-        ports:
-          postgresql: "5432"
-
+  name: postgresql
+  ## @param postgresql.version The version of PostgreSQL to use.
+  ##
+  version: "17"
+  ## @param postgresql.volume.size The size of the persistent volume for PostgreSQL.
+  ## @param postgresql.volume.storageClass The storage class for the persistent volume.
+  ##
+  volume:
+    size: 8Gi
+    storageClass: ""
+  ## @param postgresql.instances The number of PostgreSQL instances.
+  ##
+  instances: 1
 ## @section External database
 ## @descriptionStart
 ## Overrides postgresql configuration.
@@ -479,5 +492,8 @@ postgresql:
 ## @param externalDatabase.existingSecretPasswordKey Key in the Kubernetes secret containing the external PostgreSQL database password.
 externalDatabase:
   enabled: false
-  existingSecret: ""
-  existingSecretPasswordKey: ""
+  auth:
+    username: ""
+    password: ""
+    host: ""
+    database: ""

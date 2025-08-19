@@ -95,6 +95,13 @@ Create auth base url of server
 {{- end -}}
 
 {{/*
+Create a default fully qualified app name for corteza database.
+*/}}
+{{- define "corteza.postgresql.fullname" -}}
+{{- printf "%s-%s" (include "corteza.fullname" .) .Values.postgresql.name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name for corredor.
 */}}
 {{- define "corteza.corredor.fullname" -}}
