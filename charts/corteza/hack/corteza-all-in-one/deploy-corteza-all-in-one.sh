@@ -87,7 +87,7 @@ CORTEZA_HELM_ARGS="$COMMON_ARGS \
 -f $DIRNAME/values/corteza-values.yaml \
 --repo https://origoss-labs.github.io/charts"
 
-CORTEZA_HELM_COMMAND="$HELM_COMMAND corteza $DIRNAME/../.. $CORTEZA_HELM_ARGS"
+CORTEZA_HELM_COMMAND="$HELM_COMMAND corteza corteza $CORTEZA_HELM_ARGS"
 
 # Determine which components to install
 echo "The following components will be installed:"
