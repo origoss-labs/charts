@@ -1,0 +1,65 @@
+# Default values for postgresql.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+volume:
+  size: 8Gi
+  storageClass: ""
+
+instances: 1
+
+version: "17"
+
+users:
+  corteza:
+    - createdb
+
+databases:
+  corteza: corteza
+
+backup:
+  enabled: false
+  image:
+    repository: postgres
+    tag: "17.6-alpine"
+    pullPolicy: IfNotPresent
+  mountPath: /backups
+  schedule: "*/5 * * * *"
+  accessMode: ReadWriteOnce
+  size: 8Gi
+  storageClass: ""
+
+restore:
+  # Enable restoration from backup
+  enabled: false
+  # Source of the data to restore from. This should be a PVC that was used for backups.
+  dataSource:
+    claimName: ""
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
