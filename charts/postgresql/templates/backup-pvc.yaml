@@ -1,0 +1,15 @@
+{{ if .Values.backup.enabled }}
+apiVersion: "v1"
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "postgresql.fullname" . }}-backup
+  labels:
+    {{ include "postgresql.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.backup.accessMode }}
+  resources:
+    requests:
+        storage: {{ .Values.backup.size | default "8Gi" }}
+  storageClassName: {{ .Values.backup.storageClass | default "" }}
+{{- end }}
