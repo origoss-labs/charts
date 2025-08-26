@@ -25,13 +25,6 @@ appVersion: "2024.9.3"
 description: A Helm chart for deploying the Corteza low code platform.
 home: https://github.com/origoss/charts
 
-dependencies:
-- condition: postgresOperator.enabled
-  name: postgres-operator
-  alias: postgresoperator
-  repository: https://opensource.zalando.com/postgres-operator/charts/postgres-operator
-  version: 1.14.0
-
 maintainers:
 - email: erik.jagyugya@origoss.com
   name: jagyugyaerik
