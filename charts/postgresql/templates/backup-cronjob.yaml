@@ -1,0 +1,47 @@
+{{- if .Values.backup.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "postgresql.fullname" . }}-backup
+  labels:
+    {{ include "postgresql.labels" $ | nindent 4 }}
+spec:
+  schedule: {{ .Values.backup.schedule | default "*/5 * * * *" | quote }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{ include "postgresql.labels" $ | nindent 12 }}
+        spec:
+          containers:
+            - name: {{ include "postgresql.fullname" . }}-backup
+              image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
+              imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
+              env:
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "corteza.postgresql.fullname" $) }}
+                      key: username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "corteza.postgresql.fullname" $) }}
+                      key: password
+                - name: PGHOST
+                  value: {{ include "postgresql.fullname" . | quote }}
+                - name: BACKUP_DIR
+                  value: {{ .Values.backup.mountPath | quote }}
+              command: ["/bin/sh", "-c"]
+              args:
+                - pg_dump --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" corteza
+              volumeMounts:
+                - name: backup
+                  mountPath: {{ .Values.backup.mountPath }}
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup
+              persistentVolumeClaim:
+                claimName: {{ include "postgresql.fullname" . }}-backup
+{{- end -}}
