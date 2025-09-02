@@ -1,3 +1,4 @@
+{{- if .Capabilities.APIVersions.Has "acid.zalan.do/v1/postgresql" -}}
 apiVersion: "acid.zalan.do/v1"
 kind: postgresql
 metadata:
@@ -7,42 +8,21 @@ metadata:
 spec:
   teamId: postgres
   volume:
-    size: {{ .Values.volume.size }}
-    storageClass: {{ .Values.volume.storageClass }}
-  numberOfInstances: {{ .Values.instances}}
+    size: {{ .Values.volume.size | default "8Gi" }}
+    storageClass: {{ .Values.volume.storageClass | default "" }}
+  numberOfInstances: {{ .Values.instances | default 1 }}
   users:
-    {{- toYaml .Values.users | nindent 4 }}
+    {{- required "At least one user must be defined!" .Values.users |  toYaml | nindent 4 }}
   databases:
-    {{- toYaml .Values.databases | nindent 4 }}
+    {{- required "At least one database must be defined!" .Values.databases |  toYaml | nindent 4 }}
   postgresql:
     version: {{ .Values.version | quote | default "17" }}
-  {{- if .Values.backup.enabled }}
-  env:
-    - name: PGUSER
-      valueFrom:
-        secretKeyRef:
-          name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "corteza.postgresql.fullname" $) }}
-          key: username
-    - name: PGPASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "corteza.postgresql.fullname" $) }}
-          key: password
-  {{- end -}}
-  {{- if or .Values.backup.enabled .Values.volumeMounts }}
+  {{- if .Values.volumeMounts }}
   additionalVolumes:
-    {{- if .Values.backup.enabled }}
-    - name: backup
-      mountPath: {{ .Values.backup.mountPath }}
-      volumeSource:
-        persistentVolumeClaim:
-          claimName: {{ include "postgresql.fullname" $ }}-backup
-    {{- end -}}
-    {{- if .Values.volumeMounts }}
     {{- toYaml .Values.volumeMounts | nindent 4 }}
-    {{- end -}}
   {{- end -}}
   {{- if .Values.resources }}
   resources:
     {{- toYaml .Values.resources | nindent 4 }}
   {{- end -}}
+{{- end -}}
