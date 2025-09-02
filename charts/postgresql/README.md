@@ -33,19 +33,17 @@ To restore from a backup, enable the restore job and specify the backup Persiste
 ## Example Minimal Configuration
 
 ```yaml
-postgresql:
-  enabled: true
-  image:
-    repository: ghcr.io/zalando/spilo-17
-    tag: "4.0-p2"
-  instances: 1
-  size: 1Gi
-  users:
-    db-owner:
-      - createdb
-  databases:
-    my-database: db-owner
-  version: "17"
+image:
+repository: ghcr.io/zalando/spilo-17
+tag: "4.0-p2"
+instances: 1
+size: 1Gi
+users:
+db-owner:
+    - createdb
+databases:
+my-database: db-owner
+version: "17"
 ```
 
 ## Parameters
