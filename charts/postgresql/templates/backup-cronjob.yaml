@@ -16,23 +16,23 @@ spec:
         spec:
           containers:
             - name: {{ include "postgresql.fullname" . }}-backup
-              image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
-              imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
+              image: {{ include "postgresql.backupImage" . }}
+              imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
               env:
                 - name: PGUSER
                   valueFrom:
                     secretKeyRef:
-                      name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "corteza.postgresql.fullname" $) }}
+                      name: {{ include "postgresql.secretName" . }}
                       key: username
                 - name: PGPASSWORD
                   valueFrom:
                     secretKeyRef:
-                      name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "corteza.postgresql.fullname" $) }}
+                      name: {{ include "postgresql.secretName" . }}
                       key: password
                 - name: PGHOST
                   value: {{ include "postgresql.fullname" . | quote }}
                 - name: BACKUP_DIR
-                  value: {{ .Values.backup.mountPath | quote }}
+                  value: {{ required "A mount path must be provided for the backup cronjob!" .Values.backup.mountPath | quote }}
               command: ["/bin/sh", "-c"]
               args:
                 - pg_dump --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" corteza
@@ -43,5 +43,5 @@ spec:
           volumes:
             - name: backup
               persistentVolumeClaim:
-                claimName: {{ include "postgresql.fullname" . }}-backup
+                claimName: {{ include "postgresql.backupClaimName" . }}
 {{- end -}}
