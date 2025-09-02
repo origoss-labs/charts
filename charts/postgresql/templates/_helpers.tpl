@@ -60,3 +60,24 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Zalando secret
+*/}}
+{{- define "postgresql.secretName" -}}
+{{- printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.fullname" .) }}
+{{- end }}
+
+{{/*
+Backup / Restore job image
+*/}}
+{{- define "postgresql.backupImage" -}}
+{{- printf "%s:%s" (default "postgres" .Values.backup.image.repository) (default "17.6-alpine" .Values.backup.image.tag) }}
+{{- end}}
+
+{{/*
+Backup PVC name
+*/}}
+{{- define "postgresql.backupClaimName" -}}
+{{- printf "%s-backup" (include "postgresql.fullname" .) }}
+{{- end }}
