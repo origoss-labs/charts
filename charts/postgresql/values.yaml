@@ -6,60 +6,125 @@
 nameOverride: ""
 fullnameOverride: ""
 
+## @section PostgreSQL image
+## The resource uses the spilo image provided by Zalando.
+## If you want to modify the version of PostgreSQL, remember to also change the `.Values.version` and the backup / restore image tags' value accordingly to avoid discrepancies.
+## @param image.repository PostgreSQL image repository
+## @param image.tag PostgreSQL image tag
+##
+image:
+  repository: ghcr.io/zalando/spilo-17
+  tag: 4.0-p2
+
+## @section Persistent storage configuration
+## @param volume.size Size of persistent volume claim
+## @param volume.storageClass Storage class of persistent volume claim
+##
 volume:
   size: 8Gi
   storageClass: ""
 
+## @param  Number of instances (PostgreSQL pods)
+##
 instances: 1
 
+## @param version PostgreSQL major version
+##
 version: "17"
 
+## @section Users configuration
+## @param users PostgreSQL users to create
+## The key is the username, the value is a list of roles to assign to the user.
+## Available roles: superuser, inherit, login, nologin, createrole, createdb, replication, bypassrls
+## At least one user must be defined.
+##
 users:
-  corteza:
+  dbowner:
     - createdb
 
+## @section Databases configuration
+## @param databases PostgreSQL databases to create
+## The key is the database name, the value is the owner of the database. Make sure the owner is defined in the `users` section.
+## At least one database must be defined.
+##
 databases:
-  corteza: corteza
+  my-database: dbowner
 
+## @section Backup configuration
+## @param backup.enabled Enable backups
+##
 backup:
   enabled: false
+  ## @param backup.image.repository Backup image repository
+  ## @param backup.image.tag Backup image tag
+  ## @param backup.image.pullPolicy Backup image pull policy
+  ##
   image:
     repository: postgres
     tag: "17.6-alpine"
     pullPolicy: IfNotPresent
+  ## @param backup.mountPath Mount path for the backup volume
+  ## @param backup.schedule Cron schedule for the backup job
+  ## @param backup.accessMode Access mode for the backup persistent volume claim
+  ## @param backup.size Size of the backup persistent volume claim
+  ## @param backup.storageClass Storage class of the backup persistent volume claim
+  ##
   mountPath: /backups
   schedule: "*/5 * * * *"
   accessMode: ReadWriteOnce
   size: 8Gi
   storageClass: ""
 
+## @section Restore configuration
+## @param restore.enabled Enable restoration from backup
+##
 restore:
-  # Enable restoration from backup
   enabled: false
-  # Source of the data to restore from. This should be a PVC that was used for backups.
+  ## @param restore.dataSource.claimName Name of the PersistentVolumeClaim to use as data source for the restore job
+  ## If not set, it defaults to the backup PVC created by this chart (if backups are enabled).
+  ##
   dataSource:
     claimName: ""
 
+## @section Resources configuration
+##
 resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param resources.limits The resources limits for the PostgreSQL container
+  ##
   # limits:
   #   cpu: 100m
   #   memory: 128Mi
   # requests:
+  ## @param resources.requests The requested resources for the PostgreSQL container
+  ##
   #   cpu: 100m
   #   memory: 128Mi
 
-# Additional volumeMounts on the output Deployment definition.
+## @section Additional volume mounts
+## @param volumeMounts Additional volume mounts for the PostgreSQL container
+##
 volumeMounts: []
 # - name: foo
 #   mountPath: "/etc/foo"
 #   readOnly: true
 
-nodeSelector: {}
+## @section Annotations
+## @param annotations Annotations for the PostgreSQL custom resource
+##
+annotations: {}
+## @param podAnnotations Annotations for the PostgreSQL pods
+##
+podAnnotations: {}
+## @param serviceAnnotations Annotations for the PostgreSQL service
+##
+serviceAnnotations: {}
 
+## @section Toleration settings
+## @param tolerations Toleration settings for the PostgreSQL pods
+##
 tolerations: []
 
+## @section Affinity settings
+## @param affinity Affinity settings for the PostgreSQL pods
+##
 affinity: {}
