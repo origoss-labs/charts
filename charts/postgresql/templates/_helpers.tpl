@@ -24,6 +24,13 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
+PostgreSQL image
+*/}}
+{{- define "postgresql.image" -}}
+{{- printf "%s:%s" (default "ghcr.io/zalando/spilo-17" .Values.image.repository) (default "4.0-p2" .Values.image.tag) }}
+{{- end }}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "postgresql.chart" -}}

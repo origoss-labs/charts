@@ -6,6 +6,7 @@ metadata:
   labels:
     {{ include "postgresql.labels" $ }}
 spec:
+  dockerImage: {{ include "postgresql.image" . }}
   teamId: postgres
   volume:
     size: {{ .Values.volume.size | default "8Gi" }}
