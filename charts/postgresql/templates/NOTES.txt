@@ -1,0 +1,4 @@
+{{- if not (.Capabilities.APIVersions.Has "acid.zalan.do/v1/postgresql") }}
+WARNING: The Zalando PostgreSQL CRD (acid.zalan.do/v1/postgresql) was not found.
+The chart "{{ .Chart.Name }}" did not generate any Postgres cluster resources.
+{{- end }}
