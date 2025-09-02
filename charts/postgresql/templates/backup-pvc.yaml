@@ -2,12 +2,12 @@
 apiVersion: "v1"
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "postgresql.fullname" . }}-backup
+  name: {{ include "postgresql.backupClaimName" . }}
   labels:
     {{ include "postgresql.labels" $ | nindent 4 }}
 spec:
   accessModes:
-    - {{ .Values.backup.accessMode }}
+    - {{ .Values.backup.accessMode | default "ReadWriteOnce" }}
   resources:
     requests:
         storage: {{ .Values.backup.size | default "8Gi" }}
