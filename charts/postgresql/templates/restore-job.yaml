@@ -13,8 +13,8 @@ spec:
     spec:
       initContainers:
         - name: wait-for-db
-          image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
-          imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
+          image: {{ include "postgresql.backupImage" . }}
+          imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
           command: ['sh', '-c', 'until pg_isready -h $PGHOST -U $PGUSER; do echo waiting; sleep 2; done']
           env:
             - name: PGHOST
@@ -22,32 +22,32 @@ spec:
             - name: PGUSER
               valueFrom:
                 secretKeyRef:
-                    name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.fullname" $) }}
+                    name: {{ include "postgresql.secretName" . }}
                     key: username
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                    name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.fullname" $) }}
+                    name: {{ include "postgresql.secretName" .}}
                     key: password
       containers:
         - name: pgrestore
-          image: "{{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}"
-          imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
+          image: {{ include "postgresql.backupImage" . }}
+          imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
           env:
-            - name: PGPASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.fullname" $) }}
-                  key: password
             - name: PGUSER
               valueFrom:
                 secretKeyRef:
-                  name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.fullname" $) }}
+                  name: {{ include "postgresql.secretName" . }}
                   key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.secretName" . }}
+                  key: password
             - name: PGHOST
               value: {{ include "postgresql.fullname" . | quote }}
             - name: BACKUP_DIR
-              value: {{ .Values.backup.mountPath | quote }}
+              value: {{ required "A mount path must be provided for the restore job!" .Values.backup.mountPath | quote }}
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -60,6 +60,6 @@ spec:
       volumes:
         - name: backup
           persistentVolumeClaim:
-            claimName: {{ .Values.restore.dataSource.claimName | default (printf "%s-backup" (include "postgresql.fullname" $)) }}
+            claimName: {{ .Values.restore.dataSource.claimName | default (include "postgresql.backupClaimName" .) }}
       restartPolicy: OnFailure
 {{- end -}}
