@@ -5,6 +5,10 @@ metadata:
   name: {{ include "postgresql.fullname" $ }}
   labels:
     {{ include "postgresql.labels" $ }}
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end -}}
 spec:
   dockerImage: {{ include "postgresql.image" . }}
   teamId: postgres
@@ -25,5 +29,13 @@ spec:
   {{- if .Values.resources }}
   resources:
     {{- toYaml .Values.resources | nindent 4 }}
+  {{- end -}}
+  {{- if .Values.podAnnotations }}
+  podAnnotations:
+    {{- toYaml .Values.serviceAnnotations | nindent 4 }}
+  {{- end -}}
+  {{- if .Values.serviceAnnotations }}
+  serviceAnnotations:
+    {{- toYaml .Values.serviceAnnotations | nindent 4 }}
   {{- end -}}
 {{- end -}}
