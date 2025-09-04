@@ -30,7 +30,7 @@ spec:
                       name: {{ include "postgresql.secretName" . }}
                       key: password
                 - name: PGHOST
-                  value: {{ include "postgresql.fullname" . | quote }}
+                  value: {{ include "postgresql.clusterName" . | quote }}
                 - name: PGDATABASE
                   value: {{ keys .Values.databases | first | quote }}
                 - name: BACKUP_DIR
