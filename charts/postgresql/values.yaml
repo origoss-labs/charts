@@ -13,8 +13,8 @@ fullnameOverride: ""
 ## @param image.tag PostgreSQL image tag
 ##
 image:
-  repository: ghcr.io/zalando/spilo-17
-  tag: 4.0-p2
+  repository: ghcr.io/zalando/spilo-16
+  tag: 3.2-p3
 
 ## @section Persistent storage configuration
 ## @param volume.size Size of persistent volume claim
@@ -30,7 +30,7 @@ instances: 1
 
 ## @param version PostgreSQL major version
 ##
-version: "17"
+version: "16"
 
 ## @param teamId Team ID to set in the PostgreSQL custom resource
 ## Zalando's Postgres Operator uses this field for RBAC purposes, and to lower the chance of duplicate cluster names.
@@ -66,7 +66,7 @@ databases:
 backup:
   enabled: false
   mountPath: /backups
-  schedule: "*/5 * * * *"
+  schedule: "0 0 * * *"
   accessMode: ReadWriteOnce
   size: 8Gi
   storageClass: ""
