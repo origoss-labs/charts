@@ -6,6 +6,14 @@ Expand the name of the chart.
 {{- end }}
 
 {{/*
+PostgreSQL cluster name
+We prepend the 'teamId' to conform with Zalando Postgres Operator recommendations.
+*/}}
+{{- define "postgresql.clusterName" -}}
+{{- printf "%s-%s" .Values.teamId (include "postgresql.name" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.

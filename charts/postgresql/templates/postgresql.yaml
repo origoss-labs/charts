@@ -2,7 +2,7 @@
 apiVersion: "acid.zalan.do/v1"
 kind: postgresql
 metadata:
-  name: {{ include "postgresql.fullname" $ }}
+  name: {{ include "postgresql.clusterName" $ }}
   labels:
     {{- include "postgresql.labels" $ | nindent 4 }}
   {{- if .Values.annotations }}
@@ -11,7 +11,7 @@ metadata:
   {{- end }}
 spec:
   dockerImage: {{ include "postgresql.image" . }}
-  teamId: postgres
+  teamId: {{ required "A team ID must be set!" .Values.teamId | quote }}
   volume:
     size: {{ .Values.volume.size | default "8Gi" }}
     storageClass: {{ .Values.volume.storageClass | default "" }}
