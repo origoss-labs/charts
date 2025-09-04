@@ -15,6 +15,7 @@ fullnameOverride: ""
 image:
   repository: ghcr.io/zalando/spilo-16
   tag: 3.2-p3
+  pullPolicy: IfNotPresent
 
 ## @section Persistent storage configuration
 ## @param volume.size Size of persistent volume claim
