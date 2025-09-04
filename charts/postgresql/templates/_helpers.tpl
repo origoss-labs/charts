@@ -35,7 +35,7 @@ If release name contains chart name it will be used as a full name.
 PostgreSQL image
 */}}
 {{- define "postgresql.image" -}}
-{{- printf "%s:%s" (default "ghcr.io/zalando/spilo-17" .Values.image.repository) (default "4.0-p2" .Values.image.tag) }}
+{{- printf "%s:%s" .Values.image.repository .Values.image.tag }}
 {{- end }}
 
 {{/*
@@ -83,13 +83,6 @@ Zalando secret
 {{- define "postgresql.secretName" -}}
 {{- printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.fullname" .) }}
 {{- end }}
-
-{{/*
-Backup / Restore job image
-*/}}
-{{- define "postgresql.backupImage" -}}
-{{- printf "%s:%s" (default "postgres" .Values.backup.image.repository) (default "17.6-alpine" .Values.backup.image.tag) }}
-{{- end}}
 
 {{/*
 Backup PVC name
