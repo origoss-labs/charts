@@ -9,7 +9,7 @@ spec:
   template:
     metadata:
       labels:
-        {{ include "postgresql.labels" $ | nindent 8 }}
+        {{- include "postgresql.labels" (dict "context" . "component" "restore") | nindent 8 }}
     spec:
       initContainers:
         - name: wait-for-db
