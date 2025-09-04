@@ -17,7 +17,7 @@ spec:
           containers:
             - name: {{ include "postgresql.fullname" . }}-backup
               image: {{ include "postgresql.image" . }}
-              imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
+              imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
               env:
                 - name: PGUSER
                   valueFrom:

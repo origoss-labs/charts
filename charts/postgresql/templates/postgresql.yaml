@@ -13,15 +13,15 @@ spec:
   dockerImage: {{ include "postgresql.image" . }}
   teamId: {{ required "A team ID must be set!" .Values.teamId | quote }}
   volume:
-    size: {{ .Values.volume.size | default "8Gi" }}
+    size: {{ .Values.volume.size }}
     storageClass: {{ .Values.volume.storageClass | default "" }}
-  numberOfInstances: {{ .Values.instances | default 1 }}
+  numberOfInstances: {{ .Values.instances }}
   users:
     {{- required "At least one user must be defined!" .Values.users |  toYaml | nindent 4 }}
   databases:
     {{- required "At least one database must be defined!" .Values.databases |  toYaml | nindent 4 }}
   postgresql:
-    version: {{ .Values.version | quote | default "17" }}
+    version: {{ .Values.version | quote }}
   {{- if .Values.volumeMounts }}
   additionalVolumes:
     {{- toYaml .Values.volumeMounts | nindent 4 }}

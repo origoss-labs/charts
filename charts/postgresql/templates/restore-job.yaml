@@ -14,7 +14,7 @@ spec:
       initContainers:
         - name: wait-for-db
           image: {{ include "postgresql.image" . }}
-          imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
+          imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
           command: ['sh', '-c', 'until pg_isready -h $PGHOST -U $PGUSER; do echo waiting; sleep 2; done']
           env:
             - name: PGHOST
@@ -32,7 +32,7 @@ spec:
       containers:
         - name: pgrestore
           image: {{ include "postgresql.image" . }}
-          imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
+          imagePullPolicy: {{ .Values.backup.image.pullPolicy }}
           env:
             - name: PGUSER
               valueFrom:
@@ -62,6 +62,6 @@ spec:
       volumes:
         - name: backup
           persistentVolumeClaim:
-            claimName: {{ .Values.restore.dataSource.claimName | default (include "postgresql.backupClaimName" .) }}
+            claimName: {{ required "The name of a PersistentVolumeClaim must be provided to pull backup from!" .Values.restore.dataSource.claimName }}
       restartPolicy: OnFailure
 {{- end -}}

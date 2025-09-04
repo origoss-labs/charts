@@ -7,9 +7,9 @@ metadata:
     {{- include "postgresql.labels" (dict "context" . "component" "backup-storage") | nindent 4 }}
 spec:
   accessModes:
-    - {{ .Values.backup.accessMode | default "ReadWriteOnce" }}
+    - {{ .Values.backup.accessMode }}
   resources:
     requests:
-        storage: {{ .Values.backup.size | default "8Gi" }}
+        storage: {{ .Values.backup.size }}
   storageClassName: {{ .Values.backup.storageClass | default "" }}
 {{- end }}
