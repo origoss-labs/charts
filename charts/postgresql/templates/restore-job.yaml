@@ -46,6 +46,8 @@ spec:
                   key: password
             - name: PGHOST
               value: {{ include "postgresql.fullname" . | quote }}
+            - name: PGDATABASE
+              value: {{ keys .Values.databases | first | quote }}
             - name: BACKUP_DIR
               value: {{ required "A mount path must be provided for the restore job!" .Values.backup.mountPath | quote }}
           command: ["/bin/sh", "-c"]
@@ -53,7 +55,7 @@ spec:
             - |
               echo "$PGHOST:5432:*:$PGUSER:$PGPASSWORD" > ~/.pgpass
               chmod 600 ~/.pgpass
-              psql "postgresql://$PGUSER@$PGHOST:5432/corteza?sslmode=require" --file="$(ls $BACKUP_DIR/pg_dump-*.sql | sort | tail -n 1)"
+              psql "postgresql://$PGUSER@$PGHOST:5432/$PGDATABASE?sslmode=require" --file="$(ls $BACKUP_DIR/pg_dump-*.sql | sort | tail -n 1)"
           volumeMounts:
             - name: backup
               mountPath: {{ .Values.backup.mountPath }}

@@ -31,11 +31,13 @@ spec:
                       key: password
                 - name: PGHOST
                   value: {{ include "postgresql.fullname" . | quote }}
+                - name: PGDATABASE
+                  value: {{ keys .Values.databases | first | quote }}
                 - name: BACKUP_DIR
                   value: {{ required "A mount path must be provided for the backup cronjob!" .Values.backup.mountPath | quote }}
               command: ["/bin/sh", "-c"]
               args:
-                - pg_dump --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" corteza
+                - pg_dump --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" $PGDATABASE
               volumeMounts:
                 - name: backup
                   mountPath: {{ .Values.backup.mountPath }}
