@@ -1,10 +1,10 @@
-{{- if .Capabilities.APIVersions.Has "acid.zalan.do/v1/postgresql" -}}
+
 apiVersion: "acid.zalan.do/v1"
 kind: postgresql
 metadata:
   name: {{ include "postgresql.clusterName" $ }}
   labels:
-    {{- include "postgresql.labels" $ | nindent 4 }}
+    {{- include "postgresql.labels" (dict "context" . "component" "database") | nindent 4 }}
   {{- if .Values.annotations }}
   annotations:
     {{- toYaml .Values.annotations | nindent 4 }}
@@ -38,6 +38,4 @@ spec:
   serviceAnnotations:
     {{- toYaml .Values.serviceAnnotations | nindent 4 }}
   {{- end -}}
-{{- else -}}
-{{- fail "The CRD 'postgresql.acid.zalan.do/v1' is not installed in the cluster. Please install the Zalando Postgres Operator first!" -}}
-{{- end -}}
+

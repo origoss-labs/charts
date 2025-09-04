@@ -4,7 +4,7 @@ kind: Job
 metadata:
   name: "{{ include "postgresql.fullname" . }}-restore"
   labels:
-    {{ include "postgresql.labels" $ | nindent 4 }}
+    {{- include "postgresql.labels" (dict "context" . "component" "restore") | nindent 4 }}
 spec:
   template:
     metadata:

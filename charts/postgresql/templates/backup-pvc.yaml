@@ -4,7 +4,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ include "postgresql.backupClaimName" . }}
   labels:
-    {{ include "postgresql.labels" $ | nindent 4 }}
+    {{- include "postgresql.labels" (dict "context" . "component" "backup-storage") | nindent 4 }}
 spec:
   accessModes:
     - {{ .Values.backup.accessMode | default "ReadWriteOnce" }}
