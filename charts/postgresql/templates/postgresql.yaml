@@ -38,4 +38,6 @@ spec:
   serviceAnnotations:
     {{- toYaml .Values.serviceAnnotations | nindent 4 }}
   {{- end -}}
+{{- else -}}
+{{- fail "The CRD 'postgresql.acid.zalan.do/v1' is not installed in the cluster. Please install the Zalando Postgres Operator first!" -}}
 {{- end -}}
