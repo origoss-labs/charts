@@ -32,6 +32,11 @@ instances: 1
 ##
 version: "17"
 
+## @param teamId Team ID to set in the PostgreSQL custom resource
+## Zalando's Postgres Operator uses this field for RBAC purposes, and to lower the chance of duplicate cluster names.
+##
+teamId: postgres
+
 ## @section Users configuration
 ## @param users PostgreSQL users to create
 ## The key is the username, the value is a list of roles to assign to the user.
