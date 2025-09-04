@@ -81,7 +81,7 @@ Create the name of the service account to use
 Zalando secret
 */}}
 {{- define "postgresql.secretName" -}}
-{{- printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.fullname" .) }}
+{{- printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.clusterName" .) }}
 {{- end }}
 
 {{/*
