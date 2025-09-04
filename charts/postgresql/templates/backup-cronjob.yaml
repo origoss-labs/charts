@@ -12,7 +12,7 @@ spec:
       template:
         metadata:
           labels:
-            {{ include "postgresql.labels" $ | nindent 12 }}
+            {{- include "postgresql.labels" (dict "context" . "component" "backup") | nindent 12 }}
         spec:
           containers:
             - name: {{ include "postgresql.fullname" . }}-backup
