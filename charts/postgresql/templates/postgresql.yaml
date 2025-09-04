@@ -4,11 +4,11 @@ kind: postgresql
 metadata:
   name: {{ include "postgresql.fullname" $ }}
   labels:
-    {{ include "postgresql.labels" $ }}
+    {{- include "postgresql.labels" $ | nindent 4 }}
   {{- if .Values.annotations }}
   annotations:
     {{- toYaml .Values.annotations | nindent 4 }}
-  {{- end -}}
+  {{- end }}
 spec:
   dockerImage: {{ include "postgresql.image" . }}
   teamId: postgres
