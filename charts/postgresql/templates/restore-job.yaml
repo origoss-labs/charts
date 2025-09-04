@@ -13,7 +13,7 @@ spec:
     spec:
       initContainers:
         - name: wait-for-db
-          image: {{ include "postgresql.backupImage" . }}
+          image: {{ include "postgresql.image" . }}
           imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
           command: ['sh', '-c', 'until pg_isready -h $PGHOST -U $PGUSER; do echo waiting; sleep 2; done']
           env:
@@ -31,7 +31,7 @@ spec:
                     key: password
       containers:
         - name: pgrestore
-          image: {{ include "postgresql.backupImage" . }}
+          image: {{ include "postgresql.image" . }}
           imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
           env:
             - name: PGUSER
