@@ -53,29 +53,20 @@ users:
 ## At least one database must be defined.
 ##
 databases:
-  my-database: dbowner
+  mydatabase: dbowner
 
 ## @section Backup configuration
 ## @param backup.enabled Enable backups
+## @param backup.mountPath Mount path for the backup volume
+## @param backup.schedule Cron schedule for the backup job
+## @param backup.accessMode Access mode for the backup persistent volume claim
+## @param backup.size Size of the backup persistent volume claim
+## @param backup.storageClass Storage class of the backup persistent volume claim
 ##
 backup:
   enabled: false
-  ## @param backup.image.repository Backup image repository
-  ## @param backup.image.tag Backup image tag
-  ## @param backup.image.pullPolicy Backup image pull policy
-  ##
-  image:
-    repository: postgres
-    tag: "17.6-alpine"
-    pullPolicy: IfNotPresent
-  ## @param backup.mountPath Mount path for the backup volume
-  ## @param backup.schedule Cron schedule for the backup job
-  ## @param backup.accessMode Access mode for the backup persistent volume claim
-  ## @param backup.size Size of the backup persistent volume claim
-  ## @param backup.storageClass Storage class of the backup persistent volume claim
-  ##
   mountPath: /backups
-  schedule: "0 0 * * *"
+  schedule: "*/5 * * * *"
   accessMode: ReadWriteOnce
   size: 8Gi
   storageClass: ""
