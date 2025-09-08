@@ -35,6 +35,9 @@ spec:
                   value: {{ keys .Values.databases | first | quote }}
                 - name: BACKUP_DIR
                   value: {{ required "A mount path must be provided for the backup cronjob!" .Values.backup.mountPath | quote }}
+                {{- with .Values.backup.extraEnv }}
+                {{ toYaml . | nindent 16 }}
+                {{- end }}
               command: ["/bin/sh", "-c"]
               args:
                 - pg_dump --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" $PGDATABASE

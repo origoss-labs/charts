@@ -29,6 +29,9 @@ spec:
                 secretKeyRef:
                     name: {{ include "postgresql.secretName" .}}
                     key: password
+            {{- with .Values.restore.extraEnv }}
+            {{ toYaml . | nindent 12 }}
+            {{- end }}
       containers:
         - name: pgrestore
           image: {{ include "postgresql.image" . }}
@@ -50,6 +53,9 @@ spec:
               value: {{ keys .Values.databases | first | quote }}
             - name: BACKUP_DIR
               value: {{ required "A mount path must be provided for the restore job!" .Values.backup.mountPath | quote }}
+            {{- with .Values.restore.extraEnv }}
+            {{ toYaml . | nindent 12 }}
+            {{- end }}
           command: ["/bin/sh", "-c"]
           args:
             - |

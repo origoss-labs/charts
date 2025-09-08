@@ -63,6 +63,7 @@ databases:
 ## @param backup.accessMode Access mode for the backup persistent volume claim
 ## @param backup.size Size of the backup persistent volume claim
 ## @param backup.storageClass Storage class of the backup persistent volume claim
+## @param backup.extraEnv Additional environment variables to set in the backup container
 ##
 backup:
   enabled: false
@@ -71,12 +72,21 @@ backup:
   accessMode: ReadWriteOnce
   size: 8Gi
   storageClass: ""
+  extraEnv: []
+  ## - name: FOO
+  ##   value: "bar"
+
 
 ## @section Restore configuration
 ## @param restore.enabled Enable restoration from backup
+## @param restore.extraEnv Additional environment variables to set in the restore container
 ##
 restore:
   enabled: false
+  extraEnv: []
+  ## - name: FOO
+  ##   value: "bar"
+
   ## @param restore.dataSource.claimName Name of the PersistentVolumeClaim to use as data source for the restore job
   ## If not set, it defaults to the backup PVC created by this chart (if backups are enabled).
   ##
