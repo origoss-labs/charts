@@ -11,6 +11,40 @@ entries:
       artifacthub.io/license: Apache-2.0
     apiVersion: v2
     appVersion: 2024.9.3
+    created: "2025-09-08T16:17:54.270349654Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 16.x.x
+    description: A Helm chart for deploying the Corteza low code platform.
+    digest: 8455986cc0c3d6dfeaa1a96f2938343727d6072d763c7ee46d3b71aba911b4b0
+    home: https://github.com/origoss/charts
+    maintainers:
+    - email: erik.jagyugya@origoss.com
+      name: jagyugyaerik
+      url: https://github.com/jagyugyaerik
+    - email: kornel.david@origoss.com
+      name: davidkornel
+      url: https://github.com/davidkornel
+    - email: david.koterlan@origoss.com
+      name: davidkoterlan
+      url: https://github.com/davidkoterlan
+    name: corteza
+    type: application
+    urls:
+    - https://github.com/origoss-labs/charts/releases/download/corteza-1.0.10/corteza-1.0.10.tgz
+    version: 1.0.10
+  - annotations:
+      artifacthub.io/category: integration-delivery
+      artifacthub.io/images: |
+        - name: corteza
+          image: docker.io/cortezaproject/corteza:2024.9.3
+        - name: corredor
+          image: docker.io/cortezaproject/corteza-server-corredor:2024.9.3
+      artifacthub.io/license: Apache-2.0
+    apiVersion: v2
+    appVersion: 2024.9.3
     created: "2025-07-17T11:07:21.163078309Z"
     dependencies:
     - condition: postgresql.enabled
@@ -362,4 +396,4 @@ entries:
     urls:
     - https://github.com/origoss-labs/charts/releases/download/letsencrypt-issuer-0.1.0/letsencrypt-issuer-0.1.0.tgz
     version: 0.1.0
-generated: "2025-07-17T11:07:21.163102404Z"
+generated: "2025-09-08T16:17:54.270399439Z"
