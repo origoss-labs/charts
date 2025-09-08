@@ -252,6 +252,10 @@ server:
   #   auth: |
   #     foo:$apr1$OFG3Xybp$ckL0FHDAkoXYIlH9.cysT0
   #     someoneelse:$apr1$DMZX2Z4q$6SbQIfyuLQd.xmo/P0m2c.
+  extraContainers: []
+  # - name: extra-container
+  #   image: busybox
+  #   command: ['sh', '-c', 'echo Hello from the extra container! && sleep 3600']
 
 ## @section Corredor configuration
 ## @param corredor.enabled Enable the installation of the Corredor automation script runner and bundler.
