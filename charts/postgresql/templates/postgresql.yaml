@@ -22,6 +22,10 @@ spec:
     {{- required "At least one database must be defined!" .Values.databases |  toYaml | nindent 4 }}
   postgresql:
     version: {{ .Values.version | quote }}
+  {{- with .Values.extraEnv }}
+  env:
+    {{ toYaml . | nindent 4 }}
+  {{- end -}}
   {{- if .Values.volumeMounts }}
   additionalVolumes:
     {{- toYaml .Values.volumeMounts | nindent 4 }}

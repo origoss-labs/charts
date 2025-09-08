@@ -83,6 +83,14 @@ restore:
   dataSource:
     claimName: ""
 
+## @section Environment variables
+## @param extraEnv Additional environment variables to set in the PostgreSQL container
+##
+extraEnv: []
+## - name: FOO
+##   value: "bar"
+
+
 ## @section Resources configuration
 ##
 resources: {}
