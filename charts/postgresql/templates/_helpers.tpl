@@ -49,21 +49,20 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "postgresql.labels" -}}
-helm.sh/chart: {{ include "postgresql.chart" .context }}
-{{ include "postgresql.selectorLabels" (dict "context" .context "component" .component) }}
-{{- if .context.Chart.AppVersion }}
-app.kubernetes.io/version: {{ .context.Chart.AppVersion | quote }}
+helm.sh/chart: {{ include "postgresql.chart" . }}
+{{ include "postgresql.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
-app.kubernetes.io/managed-by: {{ .context.Release.Service }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
 Selector labels
 */}}
 {{- define "postgresql.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "postgresql.name" .context }}
-app.kubernetes.io/instance: {{ .context.Release.Name }}
-app.kubernetes.io/component: {{ .component }}
+app.kubernetes.io/name: {{ include "postgresql.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
