@@ -7,7 +7,7 @@ metadata:
     {{- include "postgresql.labels" . | nindent 4 }}
     app.kubernetes.io/component: backup
 spec:
-  schedule: {{ .Values.backup.schedule | default "*/5 * * * *" | quote }}
+  schedule: {{ required "A valid cron expression must be provided to schedule automatic backups!" .Values.backup.schedule | quote }}
   jobTemplate:
     spec:
       template:
@@ -40,9 +40,15 @@ spec:
                 {{- with .Values.backup.extraEnv }}
                 {{ toYaml . | nindent 16 }}
                 {{- end }}
-              command: ["/bin/sh", "-c"]
+              command: ["/bin/sh", "-c", "pg_dump"]
               args:
-                - pg_dump --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" $PGDATABASE
+                {{- if .Values.backup.dumpArgs }}
+                {{- range .Values.backup.dumpArgs }}
+                - {{ . | quote }}
+                {{- end }}
+                {{ else }}
+                - "--clean --if-exists --load-via-partition-root --quote-all-identifiers --file=${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql $PGDATABASE"
+                {{- end }}
               volumeMounts:
                 - name: backup
                   mountPath: {{ .Values.backup.mountPath }}

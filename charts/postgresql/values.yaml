@@ -64,6 +64,9 @@ databases:
 ## @param backup.size Size of the backup persistent volume claim
 ## @param backup.storageClass Storage class of the backup persistent volume claim
 ## @param backup.extraEnv Additional environment variables to set in the backup container
+## @param backup.dumpArgs Custom arguments for the pg_dump command. If left empty, the following default arguments are used:
+## --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" $PGDATABASE
+## where PGDATABASE is the first database defined in the `databases` section.
 ##
 backup:
   enabled: false
@@ -73,8 +76,10 @@ backup:
   size: 8Gi
   storageClass: ""
   extraEnv: []
-  ## - name: FOO
-  ##   value: "bar"
+    ## - name: FOO
+    ##   value: "bar"
+  dumpArgs:
+    ## - --if-exists --file=/path/to/backup/example-dump.sql exampledb
 
 
 ## @section Restore configuration
