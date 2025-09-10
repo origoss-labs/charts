@@ -4,7 +4,8 @@ kind: CronJob
 metadata:
   name: {{ include "postgresql.fullname" . }}-backup
   labels:
-    {{- include "postgresql.labels" (dict "context" . "component" "backup") | nindent 4 }}
+    {{- include "postgresql.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
 spec:
   schedule: {{ .Values.backup.schedule | default "*/5 * * * *" | quote }}
   jobTemplate:
@@ -12,7 +13,8 @@ spec:
       template:
         metadata:
           labels:
-            {{- include "postgresql.labels" (dict "context" . "component" "backup") | nindent 12 }}
+            {{- include "postgresql.labels" . | nindent 12 }}
+            app.kubernetes.io/component: backup
         spec:
           containers:
             - name: {{ include "postgresql.fullname" . }}-backup

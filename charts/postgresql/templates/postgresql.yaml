@@ -4,7 +4,8 @@ kind: postgresql
 metadata:
   name: {{ include "postgresql.clusterName" $ }}
   labels:
-    {{- include "postgresql.labels" (dict "context" . "component" "database") | nindent 4 }}
+    {{- include "postgresql.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
   {{- if .Values.annotations }}
   annotations:
     {{- toYaml .Values.annotations | nindent 4 }}

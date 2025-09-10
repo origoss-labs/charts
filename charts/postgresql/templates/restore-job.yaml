@@ -4,12 +4,14 @@ kind: Job
 metadata:
   name: "{{ include "postgresql.fullname" . }}-restore"
   labels:
-    {{- include "postgresql.labels" (dict "context" . "component" "restore") | nindent 4 }}
+    {{- include "postgresql.labels" . | nindent 4 }}
+    app.kubernetes.io/component: restore
 spec:
   template:
     metadata:
       labels:
-        {{- include "postgresql.labels" (dict "context" . "component" "restore") | nindent 8 }}
+        {{- include "postgresql.labels" . | nindent 8 }}
+        app.kubernetes.io/component: restore
     spec:
       initContainers:
         - name: wait-for-db
