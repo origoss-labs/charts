@@ -53,6 +53,8 @@ spec:
               value: {{ include "postgresql.clusterName" . | quote }}
             - name: PGDATABASE
               value: {{ keys .Values.databases | first | quote }}
+            - name: PGSSLMODE
+              value: "require"
             - name: BACKUP_DIR
               value: {{ required "A mount path must be provided for the restore job!" .Values.backup.mountPath | quote }}
             {{- with .Values.restore.extraEnv }}
@@ -60,10 +62,13 @@ spec:
             {{- end }}
           command: ["/bin/sh", "-c"]
           args:
-            - |
-              echo "$PGHOST:5432:*:$PGUSER:$PGPASSWORD" > ~/.pgpass
-              chmod 600 ~/.pgpass
-              psql "postgresql://$PGUSER@$PGHOST:5432/$PGDATABASE?sslmode=require" --file="$(ls $BACKUP_DIR/pg_dump-*.sql | sort | tail -n 1)"
+            {{- if .Values.restore.commandOverride }}
+            {{- range .Values.restore.commandOverride }}
+            - {{ . | quote }}
+            {{- end }}
+            {{ else }}
+            - psql "postgresql://$PGUSER@$PGHOST:5432/$PGDATABASE?sslmode=require" --file="$(ls $BACKUP_DIR/pg_dump-*.sql | sort | tail -n 1)"
+            {{- end }}
           volumeMounts:
             - name: backup
               mountPath: {{ .Values.backup.mountPath }}

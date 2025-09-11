@@ -40,14 +40,14 @@ spec:
                 {{- with .Values.backup.extraEnv }}
                 {{ toYaml . | nindent 16 }}
                 {{- end }}
-              command: ["/bin/sh", "-c", "pg_dump"]
+              command: ["/bin/sh", "-c"]
               args:
-                {{- if .Values.backup.dumpArgs }}
-                {{- range .Values.backup.dumpArgs }}
+                {{- if .Values.backup.commandOverride }}
+                {{- range .Values.backup.commandOverride }}
                 - {{ . | quote }}
                 {{- end }}
                 {{ else }}
-                - "--clean --if-exists --load-via-partition-root --quote-all-identifiers --file=${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql $PGDATABASE"
+                - "pg_dump --clean --if-exists --load-via-partition-root --quote-all-identifiers --file=${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql $PGDATABASE"
                 {{- end }}
               volumeMounts:
                 - name: backup

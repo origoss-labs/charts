@@ -64,8 +64,8 @@ databases:
 ## @param backup.size Size of the backup persistent volume claim
 ## @param backup.storageClass Storage class of the backup persistent volume claim
 ## @param backup.extraEnv Additional environment variables to set in the backup container
-## @param backup.dumpArgs Custom arguments for the pg_dump command. If left empty, the following default arguments are used:
-## --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" $PGDATABASE
+## @param backup.commandOverride Custom backup command. If left empty, the following default command is used:
+## pg_dump --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" $PGDATABASE
 ## where PGDATABASE is the first database defined in the `databases` section.
 ##
 backup:
@@ -78,8 +78,8 @@ backup:
   extraEnv: []
     ## - name: FOO
     ##   value: "bar"
-  dumpArgs:
-    ## - --if-exists --file=/path/to/backup/example-dump.sql exampledb
+  commandOverride: []
+    ## - pg_dump --if-exists --file=/path/to/backup/example-dump.sql exampledb
 
 
 ## @section Restore configuration
@@ -93,10 +93,15 @@ restore:
   ##   value: "bar"
 
   ## @param restore.dataSource.claimName Name of the PersistentVolumeClaim to use as data source for the restore job
-  ## If not set, it defaults to the backup PVC created by this chart (if backups are enabled).
   ##
   dataSource:
     claimName: ""
+  ## @param restore.commandOverride Custom restore command. If left empty, the following default command is used:
+  ## psql "postgresql://$PGUSER@$PGHOST:5432/$PGDATABASE?sslmode=require" --file="$(ls $BACKUP_DIR/pg_dump-*.sql | sort | tail -n 1)"
+  ## where PGDATABASE is the first database defined in the `databases` section, and the file is the latest dump created by the backup cronjob.
+  ##
+  commandOverride: []
+    ## - psql "postgresql://$PGUSER@$PGHOST:5432/mydatabase?sslmode=require" --file="/path/to/backup/example-dump.sql"
 
 ## @section Environment variables
 ## @param extraEnv Additional environment variables to set in the PostgreSQL container
