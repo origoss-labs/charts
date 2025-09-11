@@ -91,8 +91,8 @@ restore:
 | `instances`           | Number of pods for the db's StatefulSet            | `1`                        |
 | `version`             | Major PostgreSQL version                           | `"16"`                     |
 | `teamId`              | Team ID for the PostgreSQL custom resource         | `postgres`                 |
-| `users`               | Database users and their roles                     | `dbowner:[createdb]`       |
-| `databases`           | Database names and their owners                    | `my-database: dbowner`     |
+| `users`               | Database users and their roles                     | `{dbowner:[createdb]}`       |
+| `databases`           | Database names and their owners                    | `{my-database: dbowner}`     |
 | `extraEnv`            | Environment variables for the db's container       | `[]`                       |
 | `resources`           | Resource requests and limits for the db's container| `{}`                       |
 | `volumeMounts`        | Additional volume mounts for the db's container    | `[]`                       |
