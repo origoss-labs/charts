@@ -430,4 +430,30 @@ entries:
     urls:
     - https://github.com/origoss-labs/charts/releases/download/letsencrypt-issuer-0.1.0/letsencrypt-issuer-0.1.0.tgz
     version: 0.1.0
-generated: "2025-09-10T08:31:37.514490101Z"
+  postgresql:
+  - apiVersion: v2
+    appVersion: 1.14.0
+    created: "2025-09-11T09:16:20.281117548Z"
+    description: A Helm chart for deploying a PostgreSQL custom resource defined by
+      Zalando's Postgres Operator
+    digest: d78b8df13a20d8f879d14e82a7af1b4388917a2c9952717b329d6c77276a82f7
+    home: https://github.com/origoss-labs/charts
+    maintainers:
+    - email: erik.jagyugya@origoss.com
+      name: jagyugyaerik
+      url: https://github.com/jagyugyaerik
+    - email: kornel.david@origoss.com
+      name: davidkornel
+      url: https://github.com/davidkornel
+    - email: david.koterlan@origoss.com
+      name: davidkoterlan
+      url: https://github.com/davidkoterlan
+    - email: igor.turos@origoss.com
+      name: turosigor
+      url: https://github.com/turosigor
+    name: postgresql
+    type: application
+    urls:
+    - https://github.com/origoss-labs/charts/releases/download/postgresql-0.1.0/postgresql-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-09-11T09:16:20.28115063Z"
