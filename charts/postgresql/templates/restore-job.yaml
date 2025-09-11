@@ -1,0 +1,80 @@
+{{- if .Values.restore.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ include "postgresql.fullname" . }}-restore"
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+    app.kubernetes.io/component: restore
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "postgresql.labels" . | nindent 8 }}
+        app.kubernetes.io/component: restore
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: {{ include "postgresql.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ['sh', '-c', 'until pg_isready -h $PGHOST -U $PGUSER; do echo waiting; sleep 2; done']
+          env:
+            - name: PGHOST
+              value: {{ include "postgresql.clusterName" . | quote }}
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                    name: {{ include "postgresql.secretName" . }}
+                    key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                    name: {{ include "postgresql.secretName" .}}
+                    key: password
+            {{- with .Values.restore.extraEnv }}
+            {{ toYaml . | nindent 12 }}
+            {{- end }}
+      containers:
+        - name: pgrestore
+          image: {{ include "postgresql.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.secretName" . }}
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "postgresql.secretName" . }}
+                  key: password
+            - name: PGHOST
+              value: {{ include "postgresql.clusterName" . | quote }}
+            - name: PGDATABASE
+              value: {{ keys .Values.databases | first | quote }}
+            - name: PGSSLMODE
+              value: "require"
+            - name: BACKUP_DIR
+              value: {{ required "A mount path must be provided for the restore job!" .Values.backup.mountPath | quote }}
+            {{- with .Values.restore.extraEnv }}
+            {{ toYaml . | nindent 12 }}
+            {{- end }}
+          command: ["/bin/sh", "-c"]
+          args:
+            {{- if .Values.restore.commandOverride }}
+            {{- range .Values.restore.commandOverride }}
+            - {{ . | quote }}
+            {{- end }}
+            {{ else }}
+            - psql "postgresql://$PGUSER@$PGHOST:5432/$PGDATABASE?sslmode=require" --file="$(ls $BACKUP_DIR/pg_dump-*.sql | sort | tail -n 1)"
+            {{- end }}
+          volumeMounts:
+            - name: backup
+              mountPath: {{ .Values.backup.mountPath }}
+      volumes:
+        - name: backup
+          persistentVolumeClaim:
+            claimName: {{ required "The name of a PersistentVolumeClaim must be provided to pull backup from!" .Values.restore.dataSource.claimName }}
+      restartPolicy: OnFailure
+{{- end -}}

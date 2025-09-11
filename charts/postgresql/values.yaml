@@ -1,0 +1,155 @@
+# Default values for postgresql.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+## @section PostgreSQL image
+## The resource uses the spilo image provided by Zalando.
+## If you want to modify the version of PostgreSQL, remember to also change the `.Values.version` and the backup / restore image tags' value accordingly to avoid discrepancies.
+## @param image.repository PostgreSQL image repository
+## @param image.tag PostgreSQL image tag
+##
+image:
+  repository: ghcr.io/zalando/spilo-16
+  tag: 3.2-p3
+  pullPolicy: IfNotPresent
+
+## @section Persistent storage configuration
+## @param volume.size Size of persistent volume claim
+## @param volume.storageClass Storage class of persistent volume claim
+##
+volume:
+  size: 8Gi
+  storageClass: ""
+
+## @param  Number of instances (PostgreSQL pods)
+##
+instances: 1
+
+## @param version PostgreSQL major version
+##
+version: "16"
+
+## @param teamId Team ID to set in the PostgreSQL custom resource
+## Zalando's Postgres Operator uses this field for RBAC purposes, and to lower the chance of duplicate cluster names.
+##
+teamId: postgres
+
+## @section Users configuration
+## @param users PostgreSQL users to create
+## The key is the username, the value is a list of roles to assign to the user.
+## Available roles: superuser, inherit, login, nologin, createrole, createdb, replication, bypassrls
+## At least one user must be defined.
+##
+users:
+  dbowner:
+    - createdb
+
+## @section Databases configuration
+## @param databases PostgreSQL databases to create
+## The key is the database name, the value is the owner of the database. Make sure the owner is defined in the `users` section.
+## At least one database must be defined.
+##
+databases:
+  mydatabase: dbowner
+
+## @section Backup configuration
+## @param backup.enabled Enable backups
+## @param backup.mountPath Mount path for the backup volume
+## @param backup.schedule Cron schedule for the backup job
+## @param backup.accessMode Access mode for the backup persistent volume claim
+## @param backup.size Size of the backup persistent volume claim
+## @param backup.storageClass Storage class of the backup persistent volume claim
+## @param backup.extraEnv Additional environment variables to set in the backup container
+## @param backup.commandOverride Custom backup command. If left empty, the following default command is used:
+## pg_dump --clean --if-exists --load-via-partition-root --quote-all-identifiers --file="${BACKUP_DIR}/pg_dump-$(date '+%Y-%m-%d-%H-%M').sql" $PGDATABASE
+## where PGDATABASE is the first database defined in the `databases` section.
+##
+backup:
+  enabled: false
+  mountPath: /backups
+  schedule: "0 0 * * *"
+  accessMode: ReadWriteOnce
+  size: 8Gi
+  storageClass: ""
+  extraEnv: []
+    ## - name: FOO
+    ##   value: "bar"
+  commandOverride: []
+    ## - pg_dump --if-exists --file=/path/to/backup/example-dump.sql exampledb
+
+
+## @section Restore configuration
+## @param restore.enabled Enable restoration from backup
+## @param restore.extraEnv Additional environment variables to set in the restore container
+##
+restore:
+  enabled: false
+  extraEnv: []
+  ## - name: FOO
+  ##   value: "bar"
+
+  ## @param restore.dataSource.claimName Name of the PersistentVolumeClaim to use as data source for the restore job
+  ##
+  dataSource:
+    claimName: ""
+  ## @param restore.commandOverride Custom restore command. If left empty, the following default command is used:
+  ## psql "postgresql://$PGUSER@$PGHOST:5432/$PGDATABASE?sslmode=require" --file="$(ls $BACKUP_DIR/pg_dump-*.sql | sort | tail -n 1)"
+  ## where PGDATABASE is the first database defined in the `databases` section, and the file is the latest dump created by the backup cronjob.
+  ##
+  commandOverride: []
+    ## - psql "postgresql://$PGUSER@$PGHOST:5432/mydatabase?sslmode=require" --file="/path/to/backup/example-dump.sql"
+
+## @section Environment variables
+## @param extraEnv Additional environment variables to set in the PostgreSQL container
+##
+extraEnv: []
+## - name: FOO
+##   value: "bar"
+
+
+## @section Resources configuration
+##
+resources: {}
+  ## @param resources.limits The resources limits for the PostgreSQL container
+  ##
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  ## @param resources.requests The requested resources for the PostgreSQL container
+  ##
+  #   cpu: 100m
+  #   memory: 128Mi
+
+## @section Additional volume mounts
+## @param volumeMounts Additional volume mounts for the PostgreSQL container
+##
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+## @section Annotations
+## @param annotations Annotations for the PostgreSQL custom resource
+##
+annotations: {}
+## @param podAnnotations Annotations for the PostgreSQL pods
+##
+podAnnotations: {}
+## @param serviceAnnotations Annotations for the PostgreSQL service
+##
+serviceAnnotations: {}
+
+## @section Toleration settings
+## @param tolerations Toleration settings for the PostgreSQL pods
+##
+tolerations: []
+
+## @section Affinity settings
+## @param affinity Affinity settings for the PostgreSQL pods
+##
+affinity: {}

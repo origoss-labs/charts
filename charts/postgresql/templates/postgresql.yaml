@@ -1,0 +1,48 @@
+{{- if .Capabilities.APIVersions.Has "acid.zalan.do/v1/postgresql" -}}
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: {{ include "postgresql.clusterName" $ }}
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+    app.kubernetes.io/component: database
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  dockerImage: {{ include "postgresql.image" . }}
+  teamId: {{ required "A team ID must be set!" .Values.teamId | quote }}
+  volume:
+    size: {{ .Values.volume.size }}
+    storageClass: {{ .Values.volume.storageClass | default "" }}
+  numberOfInstances: {{ .Values.instances }}
+  users:
+    {{- required "At least one user must be defined!" .Values.users |  toYaml | nindent 4 }}
+  databases:
+    {{- required "At least one database must be defined!" .Values.databases |  toYaml | nindent 4 }}
+  postgresql:
+    version: {{ .Values.version | quote }}
+  {{- with .Values.extraEnv }}
+  env:
+    {{ toYaml . | nindent 4 }}
+  {{- end -}}
+  {{- if .Values.volumeMounts }}
+  additionalVolumes:
+    {{- toYaml .Values.volumeMounts | nindent 4 }}
+  {{- end -}}
+  {{- if .Values.resources }}
+  resources:
+    {{- toYaml .Values.resources | nindent 4 }}
+  {{- end -}}
+  {{- if .Values.podAnnotations }}
+  podAnnotations:
+    {{- toYaml .Values.serviceAnnotations | nindent 4 }}
+  {{- end -}}
+  {{- if .Values.serviceAnnotations }}
+  serviceAnnotations:
+    {{- toYaml .Values.serviceAnnotations | nindent 4 }}
+  {{- end -}}
+{{- else -}}
+{{- fail "The CRD 'postgresql.acid.zalan.do/v1' is not installed in the cluster. Please install the Zalando Postgres Operator first!" -}}
+{{- end -}}

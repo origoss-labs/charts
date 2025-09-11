@@ -1,0 +1,16 @@
+{{ if .Values.backup.enabled }}
+apiVersion: "v1"
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "postgresql.backupClaimName" . }}
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+spec:
+  accessModes:
+    - {{ .Values.backup.accessMode }}
+  resources:
+    requests:
+        storage: {{ .Values.backup.size }}
+  storageClassName: {{ .Values.backup.storageClass | default "" }}
+{{- end }}
