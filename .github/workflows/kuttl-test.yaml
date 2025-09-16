@@ -76,9 +76,6 @@ jobs:
           memory: 2000m
           minikube-version: '1.35.0'
 
-      - name: Install postgres operator
-        run: helm upgrade --install postgres-operator postgres-operator/postgres-operator --create-namespace -n postgres-operator --wait
-
       - name: Run standalone corteza KUTTL tests on Kind
         if: matrix.k8s_env == 'kind'
         run: >
