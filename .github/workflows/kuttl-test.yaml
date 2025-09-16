@@ -50,8 +50,11 @@ jobs:
         with:
           version: 'v3.17.0'
 
-      - name: Set up Helm repositories
+      - name: Set up origoss-labs Helm repository
         run: helm repo add origoss-labs https://origoss-labs.github.io/charts
+
+      - name: Set up postgres operator Helm repository
+        run: helm repo add postgres-operator https://opensource.zalando.com/postgres-operator/charts/postgres-operator
 
       - name: Build Helm dependencies
         run: helm dep build charts/corteza
@@ -72,6 +75,9 @@ jobs:
           cpus: 2
           memory: 2000m
           minikube-version: '1.35.0'
+
+      - name: Install postgres operator
+        run: helm upgrade --install postgres-operator/postgres-operator --create-namespace -n postgres-operator --wait
 
       - name: Run standalone corteza KUTTL tests on Kind
         if: matrix.k8s_env == 'kind'
