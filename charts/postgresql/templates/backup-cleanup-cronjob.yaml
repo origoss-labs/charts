@@ -22,7 +22,7 @@ spec:
               imagePullPolicy: {{ .Values.image.pullPolicy }}
               env:
                 - name: RETENTION_DAYS
-                  value: {{ sub .Values.backup.cleanup.retentionDays 1 }}
+                  value: "{{ sub .Values.backup.cleanup.retentionDays 1 }}"
                 - name: BACKUP_DIR
                   value: {{ required "A mount path must be provided for the backup-cleanup cronjob!" .Values.backup.mountPath | quote }}
                 {{- with .Values.backup.cleanup.extraEnv }}
