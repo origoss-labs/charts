@@ -99,37 +99,51 @@ corredor:
 
 ## PostgreSQL
 
-Persistance is a key element of Corteza. It uses PostgreSQL to store data. To manage your own database in the cluster use the below configuration. Enabling `externalDatabase` overrides the `postgresql` configuration.
+Persistance is a key element of Corteza. It uses PostgreSQL to store data. The Corteza chart uses a custom [PostgreSQL subchart](https://artifacthub.io/packages/helm/corteza/postgresql) developed and maintained by Origoss.
+> **IMPORTANT!**
+>
+> The PostgreSQL subchart deploys the database using a Custom Resource defined by [Zalando's Postgres Operator](https://github.com/zalando/postgres-operator). Consequently, the Operator and its CRDs MUST be present to successfully install the chart.
+
+To manage your own database in the cluster use the below configuration. Enabling `externalDatabase` overrides the `postgresql` configuration.
 
 ```yaml
 postgresql:
   enabled: true
-  auth:
-    enablePostgresUser: true
-    username: "corteza"
-    password: "corteza"
-    database: "corteza"
-  architecture: standalone
-  global:
-    postgresql:
-      service:
-        ports:
-          postgresql: "5432"
-externalDatabase:
-  enabled: false
+  volume:
+    size: 8Gi
+    storageClass: default
+  instances: 1
+  teamId: corteza
+  users:
+    corteza:
+      - createdb
+      - createrole
+  databases:
+    corteza: corteza
 ```
 
 ## External Database
 
-You may want to have Corteza connect to an external database rather than installing one inside your cluster. Typical reasons for this are to use a managed database service, or to share a common database server for all your applications. To achieve this, the chart allows you to specify credentials for an external database with the externalDatabase parameter.
-
-The `existingSecret` secret should store the database DSN under the `existingSecretPasswordKey` key. This must exist before installing the chart.
+You may want to have Corteza connect to an external database rather than installing one inside your cluster. Typical reasons for this are to use a managed database service, or to share a common database server for all your applications. To achieve this, the chart allows you to specify credentials for an external database with the externalDatabase parameter, in the following ways:
+  - Specify the credentials to use to connect to the database, with the `externalDatabase.auth` field.
+```yaml
+externalDatabase:
+  enabled: false
+  auth:
+    username: dbuser
+    password: dbpassword
+    hostName: dbhost
+    port: 5432
+    database: dbname
+```
+  - Use a secret to provide the database DSN, with the `externalDatabase.existingSecret` field. The `existingSecret` secret should store the database DSN under the `existingSecret.key` key. This must exist before installing the chart.
 
 ```yaml
 externalDatabase:
   enabled: true
-  existingSecret: postgres-creds
-  existingSecretPasswordKey: db-dsn
+  existingSecret:
+    name: my-db-dsn-secret
+    key: db-dsn
 ```
 
 ## Parameters
@@ -255,15 +269,18 @@ externalDatabase:
 
 Configuring an external database overrides postgresql configuration.
 
-| Name                                                    | Description                                     | Value        |
-| ------------------------------------------------------- | ----------------------------------------------- | ------------ |
-| `postgresql.enabled`                                    | Enable the installation of PostgreSQL database. | `true`       |
-| `postgresql.auth.enablePostgresUser`                    | Enable creating a PostgreSQL user.              | `true`       |
-| `postgresql.auth.username`                              | Username of the PostgreSQL user.                | `corteza`    |
-| `postgresql.auth.password`                              | Password of the PostgreSQL user.                | `corteza`    |
-| `postgresql.auth.database`                              | Database name to use.                           | `corteza`    |
-| `postgresql.architecture`                               | TODO                                            | `standalone` |
-| `postgresql.global.postgresql.service.ports.postgresql` | Port to listen on for PostgreSQL server.        | `5432`       |
+| Name                  | Description                                        | Default                    |
+|-----------------------|----------------------------------------------------|----------------------------|
+| `postgresql.enabled`    | Enable the PostgreSQL installation               | `ghcr.io/zalando/spilo-16` |
+| `postgresql.image.repository`    | PostgreSQL container image repository              | `ghcr.io/zalando/spilo-16` |
+| `postgresql.image.tag`           | PostgreSQL image tag                               | `3.2-p3`                   |
+| `postgresql.image.pullPolicy`    | Image pull policy. Also applies to backup and restore containers| `IfNotPresent`     |
+| `postgresql.volume.size`         | Storage size of the db's PVC                       | `8Gi`                      |
+| `postgresql.volume.storageClass` | Storage class of the db's PVC                      | `""`                       |
+| `postgresql.instances`           | Number of pods for the db's StatefulSet            | `1`                        |
+| `postgresql.teamId`              | Team ID for the PostgreSQL custom resource         | `corteza`                 |
+| `postgresql.users`               | Database users and their roles                     | `{corteza:[createdb, createrole]}`       |
+| `postgresql.databases`           | Database names and their owners                    | `{corteza: corteza}`     |
 
 ### External database
 
@@ -272,5 +289,10 @@ Overrides postgresql configuration.
 | Name                                         | Description                                                                            | Value   |
 | -------------------------------------------- | -------------------------------------------------------------------------------------- | ------- |
 | `externalDatabase.enabled`                   | Enable using an external PostgresSQL database.                                         | `false` |
-| `externalDatabase.existingSecret`            | Name of the Kubernetes secret containing the external PostgreSQL database credentials. | `""`    |
-| `externalDatabase.existingSecretPasswordKey` | Key in the Kubernetes secret containing the external PostgreSQL database password.     | `""`    |
+| `externalDatabase.auth.username`                   | Username used to connect to the external PostgreSQL database.                                         | `""` |
+| `externalDatabase.auth.password`                   | Password of the user used to connect to the external PostgreSQL database.                                         | `""` |
+| `externalDatabase.auth.hostName`                   | Host name of the external PostgreSQL database.                                         | `""` |
+| `externalDatabase.auth.port`                   | The port used to connect to the external PostgreSQL database.                                         | `""` |
+| `externalDatabase.auth.database`                   | Database name used to connect to the external PostgreSQL database.                                         | `""` |
+| `externalDatabase.existingSecret.name`            | Name of the Kubernetes secret containing the external PostgreSQL database DSN. | `""`    |
+| `externalDatabase.existingSecret.key` | Key in the Kubernetes secret containing the external PostgreSQL database DSN.     | `""`    |
