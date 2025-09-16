@@ -36,7 +36,7 @@ spec:
                 {{- end }}
                 {{ else }}
                 - |
-                  echo "Deleting backups older than {{ .Values.backup.cleanup.retentionDays }} from $BACKUP_DIR";
+                  echo "Deleting backups older than {{ .Values.backup.cleanup.retentionDays }} days from $BACKUP_DIR";
                   find "$BACKUP_DIR" -mtime +"$RETENTION_DAYS" -print -exec rm -f {} +
                 {{- end }}
               volumeMounts:
