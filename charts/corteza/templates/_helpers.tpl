@@ -189,7 +189,7 @@ Create the name of the service account of corredor to use
 Create DB DSN.
 */}}
 {{- define "corteza.dbDsn" -}}
-{{- printf "postgres://%s:%s@%s-postgresql:%s/%s?sslmode=disable" .Values.postgresql.auth.username .Values.postgresql.auth.password .Release.Name .Values.postgresql.global.postgresql.service.ports.postgresql .Values.postgresql.auth.database  }}
+{{- printf "postgres://%s:%s@%s-postgresql:%s/%s?sslmode=disable" .Values.externalDatabase.auth.username .Values.externalDatabase.auth.password .Values.externalDatabase.auth.hostName .Values.externalDatabase.auth.port .Values.externalDatabase.auth.database  }}
 {{- end }}
 
 {{/*

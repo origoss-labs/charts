@@ -41,17 +41,35 @@ spec:
           image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.server.image.pullPolicy }}
           env:
-          {{- if or .Values.postgresql.enabled .Values.externalDatabase.enabled }}
-          - name: DB_DSN
+          {{- if .Values.postgresql.enabled }}
+          - name: DB_HOST
+            value: "{{ include "postgresql.clusterName" .Subcharts.postgresql }}"
+          - name: DB_USER
             valueFrom:
               secretKeyRef:
+                name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "corteza" (include "postgresql.clusterName" .Subcharts.postgresql) }}
+                key: username
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "corteza" (include "postgresql.clusterName" .Subcharts.postgresql) }}
+                key: password
+          - name: DB_NAME
+            value: {{ keys .Values.postgresql.databases | first | quote }}
+          {{- end }}
+          {{- if or .Values.postgresql.enabled .Values.externalDatabase.enabled }}
+          - name: DB_DSN
           {{- if .Values.postgresql.enabled }}
+            value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):5432/$(DB_NAME)"
+          {{- else if .Values.externalDatabase.existingSecret }}
+            valueFrom:
+              secretKeyRef:
+                {{ .Values.externalDatabase.existingSecret | toYaml | nindent 16}}
+          {{- else }}
+            valueFrom:
+              secretKeyRef:
                 name: {{ include "corteza.server.fullname" . }}
                 key: db-dsn
-          {{- end }}
-          {{- if .Values.externalDatabase.enabled }}
-                name: {{ .Values.externalDatabase.existingSecret }}
-                key: {{ .Values.externalDatabase.existingSecretPasswordKey }}
           {{- end }}
           {{- end }}
           {{- if .Values.corredor.enabled}}

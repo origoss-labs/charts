@@ -50,8 +50,11 @@ jobs:
         with:
           version: 'v3.17.0'
 
-      - name: Set up Helm repositories
-        run: helm repo add bitnami https://charts.bitnami.com/bitnami
+      - name: Set up origoss-labs Helm repository
+        run: helm repo add origoss-labs https://origoss-labs.github.io/charts
+
+      - name: Set up postgres operator Helm repository
+        run: helm repo add postgres-operator https://opensource.zalando.com/postgres-operator/charts/postgres-operator
 
       - name: Build Helm dependencies
         run: helm dep build charts/corteza

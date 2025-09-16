@@ -8,7 +8,7 @@
 ## @param global.insecure Whether to enable insecure communication with the application.
 ##
 global:
-  domain: &domain ""
+  domain: &domain "localhost:8080"
   storageClass: ""
   insecure: true
 
@@ -199,7 +199,38 @@ server:
     ##     name: secret-name
   ## @param server.initContainers Add additional init containers to the Corteza server pods.
   ##
-  initContainers: []
+  initContainers:
+    - name: pg-init
+      image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          # Wait for database to be ready
+          until pg_isready -h $PGHOST -U $PGUSER; do
+            echo "Waiting for database..."
+            sleep 2
+          done
+          # Connect to the corteza database and grant permissions
+          psql -h $PGHOST -U $PGUSER -d corteza -c "
+            GRANT ALL PRIVILEGES ON SCHEMA public TO corteza;
+            GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO corteza;
+            GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO corteza;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO corteza;
+            ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO corteza;
+          "
+      env:
+        - name: PGHOST
+          value: '{{ include "postgresql.clusterName" .Subcharts.postgresql }}'
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: '{{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.clusterName" .Subcharts.postgresql) }}'
+              key: username
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: '{{ printf "%s.%s.credentials.postgresql.acid.zalan.do" "postgres" (include "postgresql.clusterName" .Subcharts.postgresql) }}'
+              key: password
   ## @param server.imagePullSecrets Specify docker-registry secret names as an array. The specified secrets MUST be in the same namespace.
   ##
   imagePullSecrets: []
@@ -455,33 +486,92 @@ gotenberg:
 ##
 postgresql:
   enabled: true
-  ## @param postgresql.auth.enablePostgresUser Enable creating a PostgreSQL user.
-  ## @param postgresql.auth.username Username of the PostgreSQL user.
-  ## @param postgresql.auth.password Password of the PostgreSQL user.
-  ## @param postgresql.auth.database Database name to use.
+
+  # This is to override the chart name.
+  nameOverride: ""
+  fullnameOverride: ""
+
+  ## @section PostgreSQL image
+  ## The resource uses the spilo image provided by Zalando.
+  ## If you want to modify the version of PostgreSQL, remember to also change the `.Values.version` and the backup / restore image tags' value accordingly to avoid discrepancies.
+  ## @param image.repository PostgreSQL image repository
+  ## @param image.tag PostgreSQL image tag
   ##
-  auth:
-    enablePostgresUser: true
-    username: "corteza"
-    password: "corteza"
-    database: "corteza"
-  ## @param postgresql.architecture TODO
-  architecture: standalone
-  ## @param postgresql.global.postgresql.service.ports.postgresql Port to listen on for PostgreSQL server.
-  global:
-    postgresql:
-      service:
-        ports:
-          postgresql: "5432"
+  image:
+    repository: ghcr.io/zalando/spilo-16
+    tag: 3.2-p3
+    pullPolicy: IfNotPresent
+
+  ## @section Persistent storage configuration
+  ## @param volume.size Size of persistent volume claim
+  ## @param volume.storageClass Storage class of persistent volume claim
+  ##
+  volume:
+    size: 8Gi
+    storageClass: ""
+
+  ## @param  Number of instances (PostgreSQL pods)
+  ##
+  instances: 1
+
+  ## @param teamId Team ID to set in the PostgreSQL custom resource
+  ## Zalando's Postgres Operator uses this field for RBAC purposes, and to lower the chance of duplicate cluster names.
+  ##
+  teamId: corteza
+
+  ## @section Users configuration
+  ## @param users PostgreSQL users to create
+  ## The key is the username, the value is a list of roles to assign to the user.
+  ## Available roles: superuser, inherit, login, nologin, createrole, createdb, replication, bypassrls
+  ## At least one user must be defined.
+  ##
+  users:
+    corteza:
+      - createdb
+      - createrole
+
+  ## @section Databases configuration
+  ## @param databases PostgreSQL databases to create
+  ## The key is the database name, the value is the owner of the database. Make sure the owner is defined in the `users` section.
+  ## At least one database must be defined.
+  ##
+  databases:
+    corteza: corteza
+
+  backup:
+    enabled: false
+    schedule: "0 0 * * *"
+    size: 8Gi
+
+  restore:
+    enabled: false
+    dataSource:
+      claimName: ""
 
 ## @section External database
 ## @descriptionStart
 ## Overrides postgresql configuration.
 ## @descriptionEnd
 ## @param externalDatabase.enabled Enable using an external PostgresSQL database.
-## @param externalDatabase.existingSecret Name of the Kubernetes secret containing the external PostgreSQL database credentials.
-## @param externalDatabase.existingSecretPasswordKey Key in the Kubernetes secret containing the external PostgreSQL database password.
+##
 externalDatabase:
   enabled: false
-  existingSecret: ""
-  existingSecretPasswordKey: ""
+
+  ## @param externalDatabase.existingSecret.name Name of the Kubernetes secret containing the external PostgreSQL database credentials.
+  ## @param externalDatabase.existingSecret.key Key in the Kubernetes secret containing the external PostgreSQL database password.
+  ##
+  existingSecret: {}
+    ## name: example-db-secret
+    ## key: dsn-key
+  ## @param externalDatabase.auth.username The username used to connect to the external database.
+  ## @param externalDatabase.auth.password The password used to connect to the external database.
+  ## @param externalDatabase.auth.hostName The host name used to connect to the external database.
+  ## @param externalDatabase.auth.port The port used to connect to the external database.
+  ## @param externalDatabase.auth.database The name of the external database.
+  ##
+  auth: {}
+    ## username: dbuser
+    ## password: dbpassword
+    ## hostName: dbhost
+    ## port: 5432
+    ## database: dbname
