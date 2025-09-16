@@ -1,0 +1,51 @@
+{{- if .Values.backup.cleanup.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "postgresql.fullname" . }}-backup-cleanup
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup-cleanup
+spec:
+  schedule: {{ required "A valid cron expression must be provided to schedule automatic backup cleanups!" .Values.backup.cleanup.schedule | quote }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "postgresql.labels" . | nindent 12 }}
+            app.kubernetes.io/component: backup-cleanup
+        spec:
+          containers:
+            - name: {{ include "postgresql.fullname" . }}-backup-cleanup
+              image: "{{ .Values.backup.cleanup.image.repository }}:{{ .Values.backup.cleanup.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              env:
+                - name: RETENTION_DAYS
+                  value: {{ sub .Values.backup.cleanup.retentionDays 1 }}
+                - name: BACKUP_DIR
+                  value: {{ required "A mount path must be provided for the backup-cleanup cronjob!" .Values.backup.mountPath | quote }}
+                {{- with .Values.backup.cleanup.extraEnv }}
+                {{ toYaml . | nindent 16 }}
+                {{- end }}
+              command: ["/bin/sh", "-c"]
+              args:
+                {{- if .Values.backup.cleanup.commandOverride }}
+                {{- range .Values.backup.cleanup.commandOverride }}
+                - {{ . | quote }}
+                {{- end }}
+                {{ else }}
+                - |
+                  echo "Deleting backups older than {{ .Values.backup.cleanup.retentionDays }} from $BACKUP_DIR";
+                  find "$BACKUP_DIR" -mtime +"$RETENTION_DAYS" -print -exec rm -f {} +
+                {{- end }}
+              volumeMounts:
+                - name: backup
+                  mountPath: {{ .Values.backup.mountPath }}
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup
+              persistentVolumeClaim:
+                claimName: {{ include "postgresql.backupClaimName" . }}
+
+{{- end }}
