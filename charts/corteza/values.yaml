@@ -188,8 +188,7 @@ server:
   ## @param server.extraEnv An array to add extra env vars.
   ##
   extraEnv: []
-    ## - name: "SOME_ENV"
-    ##   value: "some-value"
+    ## "SOME_ENV": "some-value"
   ## @param server.extraEnvFrom An array to pass references of extra env vars.
   ##
   extraEnvFrom: []
