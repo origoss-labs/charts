@@ -390,9 +390,37 @@ gotenberg:
   ## @param gotenberg.image.imagePullPolicy Image pull policy for the Gotenberg container image.
   ##
   image:
-    repository: thecodingmachine/gotenberg
-    tag: "6"
+    repository: gotenberg/gotenberg
+    tag: "8"
     imagePullPolicy: IfNotPresent
+  ## @param gotenberg.startupProbe Startup probe for the Gotenberg container. Set to `{}` to disable.
+  ## Gotenberg 7 and above expose the health check on `/health`, older 6.x images used `/ping`.
+  ##
+  startupProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 30
+  ## @param gotenberg.livenessProbe Liveness probe for the Gotenberg container. Set to `{}` to disable.
+  ##
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+  ## @param gotenberg.readinessProbe Readiness probe for the Gotenberg container. Set to `{}` to disable.
+  ##
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
   ## @param gotenberg.service.type Service type for the Gotenberg service.
   ## @param gotenberg.service.port Service port for the Gotenberg service.
   ## @param gotenberg.service.containerPort Service port for the Gotenberg container.

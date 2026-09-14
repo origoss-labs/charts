@@ -31,7 +31,7 @@ spec:
       initContainers:
         {{- tpl (toYaml .Values.gotenberg.initContainers) $ | nindent 8 }}
       containers:
-        - image: "{{ .Values.gotenberg.image.repository }}:{{ .Values.gotenberg.image.tag | default "6" }}"
+        - image: "{{ .Values.gotenberg.image.repository }}:{{ .Values.gotenberg.image.tag | default "8" }}"
           imagePullPolicy: {{ .Values.gotenberg.image.imagePullPolicy }}
           name: gotenberg
           ports:
@@ -39,16 +39,20 @@ spec:
               containerPort: {{ .Values.gotenberg.service.containerPort }}
           resources:
             {{- toYaml .Values.gotenberg.resources | nindent 12 }}
+          {{- with .Values.gotenberg.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.gotenberg.livenessProbe }}
           livenessProbe:
-            httpGet:
-                path: /ping
-                port: http
-            readinessProbe:
-            httpGet:
-                path: /ping
-                port: http
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.gotenberg.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           securityContext:
-          {{- toYaml .Values.gotenberg.podSecurityContext | nindent 12 }}
+            {{- toYaml .Values.gotenberg.securityContext | nindent 12 }}
       {{- with .Values.gotenberg.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
