@@ -80,6 +80,31 @@ backup:
     ##   value: "bar"
   commandOverride: []
     ## - pg_dump --if-exists --file=/path/to/backup/example-dump.sql exampledb
+  ## @param backup.cleanup.enabled Enable automatic backup deletion
+  ##
+  cleanup:
+    enabled: false
+    ## @param backup.cleanup.image.repository Repository of the cleanup job image
+    ## @param backup.cleanup.image.tag Tag of the cleanup job image
+    ##
+    image:
+      repository: busybox
+      tag: 1.37.0-glibc
+    ## @param backup.cleanup.schedule Cron schedule for the cleanup job
+    ##
+    schedule: "0 0 0 * *"
+    ## @param backup.cleanup.retentionDays The cleanup job deletes backups older than the retention days
+    ##
+    retentionDays: 7
+    ## @param backup.cleanup.commandOverride Custom cleanup command. If left empty, the following default command is used:
+    ## find "$BACKUP_DIR" -mtime +"$RETENTION_DAYS" -print -exec rm -rf {} +
+    ##
+    commandOverride: []
+    ## @param backup.cleanup.extraEnv Additional environment variables to set in the cleanup job container
+    ##
+    extraEnv: []
+      ## - name: FOO
+      ##   value: "bar"
 
 
 ## @section Restore configuration
