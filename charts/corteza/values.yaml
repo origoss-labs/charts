@@ -87,6 +87,13 @@ server:
     #  - secretName: my-tls
     #    hosts:
     #      - *domain
+    ## @param server.ingress.backendOverride.service.name Name of a service that receives all ingress traffic instead of the Corteza server service (e.g. a temporary promo site). Empty means no override.
+    ## @param server.ingress.backendOverride.service.port Port of the override service. Empty means `server.service.port`.
+    ##
+    backendOverride:
+      service:
+        name: ""
+        port: ""
     ## @param server.ingress.gcp.backendConfig The backend configuration for Google Cloud Ingress.
     ## @param server.ingress.gcp.frontendConfig The frontend configuration for Google Cloud Ingress.
     ##
@@ -492,6 +499,12 @@ postgresql:
     username: "corteza"
     password: "corteza"
     database: "corteza"
+  ## @param postgresql.extraConnParams Extra connection parameters to add to the DB DSN query string. Each key-value pair is added as-is. A value for `sslmode` replaces the default `disable`.
+  ## e.g:
+  ## extraConnParams:
+  ##   pool_max_conns: "20"
+  ##
+  extraConnParams: {}
   ## @param postgresql.architecture TODO
   architecture: standalone
   ## @param postgresql.global.postgresql.service.ports.postgresql Port to listen on for PostgreSQL server.

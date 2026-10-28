@@ -186,10 +186,29 @@ Create the name of the service account of corredor to use
 {{- end }}
 
 {{/*
+Create the name of the service that the server ingress sends traffic to.
+*/}}
+{{- define "corteza.server.ingress.backendServiceName" -}}
+{{- (((.Values.server.ingress.backendOverride).service).name) | default (include "corteza.server.fullname" .) -}}
+{{- end -}}
+
+{{/*
+Create the port of the service that the server ingress sends traffic to.
+*/}}
+{{- define "corteza.server.ingress.backendServicePort" -}}
+{{- (((.Values.server.ingress.backendOverride).service).port) | default .Values.server.service.port -}}
+{{- end -}}
+
+{{/*
 Create DB DSN.
 */}}
 {{- define "corteza.dbDsn" -}}
-{{- printf "postgres://%s:%s@%s-postgresql:%s/%s?sslmode=disable" .Values.postgresql.auth.username .Values.postgresql.auth.password .Release.Name .Values.postgresql.global.postgresql.service.ports.postgresql .Values.postgresql.auth.database  }}
+{{- $params := merge (deepCopy (.Values.postgresql.extraConnParams | default dict)) (dict "sslmode" "disable") -}}
+{{- $query := list -}}
+{{- range $key := keys $params | sortAlpha -}}
+{{- $query = append $query (printf "%s=%s" (urlquery $key) (urlquery (toString (get $params $key)))) -}}
+{{- end -}}
+{{- printf "postgres://%s:%s@%s-postgresql:%s/%s?%s" .Values.postgresql.auth.username .Values.postgresql.auth.password .Release.Name .Values.postgresql.global.postgresql.service.ports.postgresql .Values.postgresql.auth.database (join "&" $query) }}
 {{- end }}
 
 {{/*
