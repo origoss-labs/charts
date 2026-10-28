@@ -186,6 +186,20 @@ Create the name of the service account of corredor to use
 {{- end }}
 
 {{/*
+Create the name of the service that the server ingress sends traffic to.
+*/}}
+{{- define "corteza.server.ingress.backendServiceName" -}}
+{{- (((.Values.server.ingress.backendOverride).service).name) | default (include "corteza.server.fullname" .) -}}
+{{- end -}}
+
+{{/*
+Create the port of the service that the server ingress sends traffic to.
+*/}}
+{{- define "corteza.server.ingress.backendServicePort" -}}
+{{- (((.Values.server.ingress.backendOverride).service).port) | default .Values.server.service.port -}}
+{{- end -}}
+
+{{/*
 Create DB DSN.
 */}}
 {{- define "corteza.dbDsn" -}}

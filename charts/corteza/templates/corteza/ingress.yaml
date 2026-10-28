@@ -1,8 +1,7 @@
 {{- if and .Values.server.ingress.enabled (eq .Values.server.ingress.controller "regular") -}}
 {{- $fullName := include "corteza.server.fullname" . -}}
-{{- $override := ((.Values.server.ingress.backendOverride).service) | default dict -}}
-{{- $svcName := $override.name | default $fullName -}}
-{{- $svcPort := $override.port | default .Values.server.service.port -}}
+{{- $svcName := include "corteza.server.ingress.backendServiceName" . -}}
+{{- $svcPort := include "corteza.server.ingress.backendServicePort" . -}}
 {{- if and .Values.server.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.server.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.server.ingress.annotations "kubernetes.io/ingress.class" .Values.server.ingress.className}}
