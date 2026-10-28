@@ -16,10 +16,11 @@ metadata:
     {{- range $key, $value := .Values.server.ingress.annotations }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
+{{- $override := ((.Values.server.ingress.backendOverride).service) | default dict }}
 spec:
   defaultBackend:
     service:
-      name: {{ include "corteza.server.fullname" . }}
+      name: {{ $override.name | default (include "corteza.server.fullname" .) }}
       port:
-        number: {{ .Values.server.service.port }}
+        number: {{ $override.port | default .Values.server.service.port }}
 {{- end }}
