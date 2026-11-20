@@ -255,7 +255,7 @@ Host of the CloudNativePG read-write service.
 Name of the pg_dump backup PVC.
 */}}
 {{- define "corteza.cnpg.backupClaimName" -}}
-{{- .Values.cnpg.backup.storage.existingClaim | default (printf "%s-pgdump" (include "corteza.cnpg.clusterName" .)) -}}
+{{- .Values.cnpg.backup.storage.existingClaim | default .Values.cnpg.backup.storage.claimName | default (printf "%s-pgdump" (include "corteza.cnpg.clusterName" .)) -}}
 {{- end -}}
 
 {{/*
