@@ -1,0 +1,30 @@
+{{- if and .Values.cnpg.enabled .Values.cnpg.backup.enabled (not .Values.cnpg.backup.storage.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "corteza.cnpg.backupClaimName" . }}
+  namespace: {{ include "corteza.cnpg.namespace" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" "pgdump" "name" "pgdump") | nindent 4 }}
+    {{- with .Values.cnpg.backup.storage.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.cnpg.backup.storage.keep .Values.cnpg.backup.storage.annotations }}
+  annotations:
+    {{- if .Values.cnpg.backup.storage.keep }}
+    helm.sh/resource-policy: keep
+    {{- end }}
+    {{- with .Values.cnpg.backup.storage.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- include "corteza.storage.class" (dict "persistence" .Values.cnpg.backup.storage "global" .Values.global) | nindent 2 }}
+  accessModes:
+  {{- range .Values.cnpg.backup.storage.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.cnpg.backup.storage.size | quote }}
+{{- end }}

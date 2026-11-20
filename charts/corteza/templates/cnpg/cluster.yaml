@@ -1,0 +1,93 @@
+{{- if .Values.cnpg.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "corteza.cnpg.clusterName" . }}
+  namespace: {{ include "corteza.cnpg.namespace" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" "postgresql" "name" "postgresql") | nindent 4 }}
+  {{- with .Values.cnpg.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  instances: {{ .Values.cnpg.instances }}
+  enablePDB: {{ .Values.cnpg.enablePDB }}
+  imageName: {{ .Values.cnpg.imageName | quote }}
+  imagePullPolicy: {{ .Values.cnpg.imagePullPolicy }}
+  primaryUpdateStrategy: {{ .Values.cnpg.primaryUpdateStrategy }}
+  enableSuperuserAccess: {{ .Values.cnpg.enableSuperuserAccess }}
+  {{- with .Values.cnpg.inheritedMetadata }}
+  inheritedMetadata:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  postgresql:
+    {{- with .Values.cnpg.postgresql.parameters }}
+    parameters:
+      {{- range $key, $value := . }}
+      {{ $key }}: {{ $value | toString | quote }}
+      {{- end }}
+    {{- end }}
+    {{- with .Values.cnpg.postgresql.sharedPreloadLibraries }}
+    shared_preload_libraries:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  {{- with .Values.cnpg.managedRoles }}
+  managed:
+    roles:
+      {{- toYaml . | nindent 6 }}
+  {{- end }}
+  bootstrap:
+    initdb:
+      database: {{ .Values.cnpg.database }}
+      owner: {{ .Values.cnpg.owner }}
+      {{- if .Values.cnpg.appSecret.existingSecret }}
+      secret:
+        name: {{ .Values.cnpg.appSecret.existingSecret }}
+      {{- end }}
+      {{- if .Values.cnpg.import.enabled }}
+      import:
+        type: microservice
+        databases:
+          - {{ .Values.cnpg.import.database }}
+        source:
+          externalCluster: import-source
+        {{- with .Values.cnpg.import.postImportApplicationSQL }}
+        postImportApplicationSQL:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- end }}
+  {{- if .Values.cnpg.import.enabled }}
+  externalClusters:
+    - name: import-source
+      connectionParameters:
+        host: {{ required "cnpg.import.host is required when cnpg.import.enabled is true" .Values.cnpg.import.host | quote }}
+        port: {{ .Values.cnpg.import.port | toString | quote }}
+        user: {{ .Values.cnpg.import.user | quote }}
+        dbname: {{ .Values.cnpg.import.dbname | quote }}
+        sslmode: {{ .Values.cnpg.import.sslmode | quote }}
+      password:
+        name: {{ required "cnpg.import.passwordSecret.name is required when cnpg.import.enabled is true" .Values.cnpg.import.passwordSecret.name }}
+        key: {{ required "cnpg.import.passwordSecret.key is required when cnpg.import.enabled is true" .Values.cnpg.import.passwordSecret.key }}
+  {{- end }}
+  storage:
+    size: {{ .Values.cnpg.storage.size }}
+    {{- with .Values.cnpg.storage.storageClass }}
+    storageClass: {{ . }}
+    {{- end }}
+  {{- if .Values.cnpg.walStorage.enabled }}
+  walStorage:
+    size: {{ .Values.cnpg.walStorage.size }}
+    {{- with .Values.cnpg.walStorage.storageClass }}
+    storageClass: {{ . }}
+    {{- end }}
+  {{- end }}
+  {{- with .Values.cnpg.resources }}
+  resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.cnpg.affinity }}
+  affinity:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
