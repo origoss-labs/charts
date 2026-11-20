@@ -212,6 +212,66 @@ Create DB DSN.
 {{- end }}
 
 {{/*
+Name of the CloudNativePG Cluster.
+*/}}
+{{- define "corteza.cnpg.clusterName" -}}
+{{- .Values.cnpg.clusterName | default (printf "%s-pg" .Release.Name) | trunc 50 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Namespace of the CloudNativePG cluster and its pg_dump resources.
+*/}}
+{{- define "corteza.cnpg.namespace" -}}
+{{- .Values.cnpg.namespace | default .Release.Namespace -}}
+{{- end -}}
+
+{{/*
+Name of the application user secret. CloudNativePG generates "<cluster>-app"
+unless cnpg.appSecret.existingSecret is set. When the cluster runs in another
+namespace, the secret must exist in both namespaces.
+*/}}
+{{- define "corteza.cnpg.appSecretName" -}}
+{{- if .Values.cnpg.appSecret.existingSecret -}}
+{{- .Values.cnpg.appSecret.existingSecret -}}
+{{- else if ne (include "corteza.cnpg.namespace" .) .Release.Namespace -}}
+{{- fail "cnpg.appSecret.existingSecret is required when cnpg.namespace differs from the release namespace" -}}
+{{- else -}}
+{{- printf "%s-app" (include "corteza.cnpg.clusterName" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Host of the CloudNativePG read-write service.
+*/}}
+{{- define "corteza.cnpg.rwHost" -}}
+{{- $host := printf "%s-rw" (include "corteza.cnpg.clusterName" .) -}}
+{{- if ne (include "corteza.cnpg.namespace" .) .Release.Namespace -}}
+{{- $host = printf "%s.%s.svc" $host (include "corteza.cnpg.namespace" .) -}}
+{{- end -}}
+{{- $host -}}
+{{- end -}}
+
+{{/*
+Name of the pg_dump backup PVC.
+*/}}
+{{- define "corteza.cnpg.backupClaimName" -}}
+{{- .Values.cnpg.backup.storage.existingClaim | default (printf "%s-pgdump" (include "corteza.cnpg.clusterName" .)) -}}
+{{- end -}}
+
+{{/*
+Create DB DSN for the CloudNativePG cluster. The password is expanded by
+Kubernetes from the CNPG_APP_PASSWORD environment variable of the container.
+*/}}
+{{- define "corteza.cnpg.dbDsn" -}}
+{{- $params := merge (deepCopy (.Values.cnpg.extraConnParams | default dict)) (dict "sslmode" "require") -}}
+{{- $query := list -}}
+{{- range $key := keys $params | sortAlpha -}}
+{{- $query = append $query (printf "%s=%s" (urlquery $key) (urlquery (toString (get $params $key)))) -}}
+{{- end -}}
+{{- printf "postgres://%s:$(CNPG_APP_PASSWORD)@%s:5432/%s?%s" .Values.cnpg.owner (include "corteza.cnpg.rwHost" .) .Values.cnpg.database (join "&" $query) }}
+{{- end }}
+
+{{/*
 Create Corredor init clone repo command list
 */}}
 {{- define "corteza.corredor.initCloneRepo.commandList" -}}

@@ -41,7 +41,15 @@ spec:
           image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.server.image.pullPolicy }}
           env:
-          {{- if or .Values.postgresql.enabled .Values.externalDatabase.enabled }}
+          {{- if .Values.cnpg.enabled }}
+          - name: CNPG_APP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "corteza.cnpg.appSecretName" . }}
+                key: password
+          - name: DB_DSN
+            value: {{ include "corteza.cnpg.dbDsn" . | quote }}
+          {{- else if or .Values.postgresql.enabled .Values.externalDatabase.enabled }}
           - name: DB_DSN
             valueFrom:
               secretKeyRef:

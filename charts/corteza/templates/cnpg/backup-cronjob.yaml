@@ -1,0 +1,108 @@
+{{- if and .Values.cnpg.enabled .Values.cnpg.backup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "corteza.cnpg.clusterName" . }}-pgdump
+  namespace: {{ include "corteza.cnpg.namespace" . }}
+  labels:
+    {{- include "corteza.labels" (dict "context" . "component" "pgdump" "name" "pgdump") | nindent 4 }}
+spec:
+  schedule: {{ .Values.cnpg.backup.schedule | quote }}
+  {{- with .Values.cnpg.backup.timeZone }}
+  timeZone: {{ . | quote }}
+  {{- end }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.cnpg.backup.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cnpg.backup.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            {{- include "corteza.labels" (dict "context" . "component" "pgdump" "name" "pgdump") | nindent 12 }}
+          {{- with .Values.cnpg.backup.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        spec:
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 26
+            runAsGroup: 26
+            fsGroup: 26
+            seccompProfile:
+              type: RuntimeDefault
+          {{- with .Values.cnpg.backup.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.cnpg.backup.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - name: pgdump
+              image: {{ .Values.cnpg.backup.image | default .Values.cnpg.imageName | quote }}
+              imagePullPolicy: {{ .Values.cnpg.imagePullPolicy }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              env:
+                - name: PGHOST
+                  value: {{ include "corteza.cnpg.clusterName" . }}-rw
+                - name: PGPORT
+                  value: "5432"
+                - name: PGDATABASE
+                  value: {{ .Values.cnpg.database | quote }}
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "corteza.cnpg.appSecretName" . }}
+                      key: username
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "corteza.cnpg.appSecretName" . }}
+                      key: password
+                - name: PGSSLMODE
+                  value: require
+                - name: PGDUMP_DIR
+                  value: /backup/pgdump
+                - name: RETENTION_DAYS
+                  value: {{ .Values.cnpg.backup.retentionDays | quote }}
+              {{- if .Values.cnpg.backup.command }}
+              command:
+                {{- toYaml .Values.cnpg.backup.command | nindent 16 }}
+              {{- else }}
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  set -euo pipefail
+                  find "${PGDUMP_DIR}" -type f -name 'db-full-*.sql.gz' -mtime "+${RETENTION_DAYS}" -print -delete
+                  target="${PGDUMP_DIR}/db-full-$(date '+%Y-%m-%d-%H-%M').sql.gz"
+                  pg_dump | gzip > "${target}.tmp"
+                  mv "${target}.tmp" "${target}"
+                  ls -lh "${target}"
+              {{- end }}
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup/pgdump
+                - name: tmp
+                  mountPath: /tmp
+              {{- with .Values.cnpg.backup.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+          volumes:
+            - name: backup
+              persistentVolumeClaim:
+                claimName: {{ include "corteza.cnpg.backupClaimName" . }}
+            - name: tmp
+              emptyDir: {}
+{{- end }}
